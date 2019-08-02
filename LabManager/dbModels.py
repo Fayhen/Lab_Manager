@@ -15,10 +15,10 @@ class PersonType(db.Model):
     person = db.relationship('Person', backref='person_type', lazy=True)
 
 
-class Genre(db.Model):
+class Gender(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    genre_name = db.Column(db.String)
-    person = db.relationship('Person', backref='person_genre', lazy=True)
+    gender_name = db.Column(db.String)
+    person = db.relationship('Person', backref='person_gender', lazy=True)
 
 
 class Person(db.Model):
@@ -33,7 +33,7 @@ class Person(db.Model):
     imagefile = db.Column(db.String(20), nullable=False, default='default.jpg')
     imagefile_path = db.Column(db.String, nullable=False, default=os.path.join("static/profile_pics", "default.jpg"))
     type_id = db.Column(db.Integer, db.ForeignKey(PersonType.id))
-    genre_id = db.Column(db.Integer, db.ForeignKey(Genre.id))
+    gender_id = db.Column(db.Integer, db.ForeignKey(Gender.id))
     account = db.relationship('User', backref='own_info', lazy=True)
     frequency = db.relationship('FrequencyEvent', backref='person_frequency', lazy=True)
     field_events = db.relationship("FieldEvent", secondary=lambda: helper_field_person, back_populates="personnel")
@@ -69,6 +69,7 @@ class Inventory(db.Model):
 
 class Lendings(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    lender = db.Column(db.String(100), nullable=False)
     lend_date = db.Column(db.Date, nullable=False)
     return_expected = db.Column(db.Date, nullable=False)
     return_done = db.Column(db.Date, nullable=True)

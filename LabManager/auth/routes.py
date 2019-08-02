@@ -2,7 +2,7 @@ import os
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from flask_login import login_user, logout_user, current_user, login_required
 from LabManager import app, db, bcrypt
-from LabManager.dbModels import User, Person
+from LabManager.dbModels import PersonType, Gender, Person, User
 from LabManager.auth.forms import RegistrationForm, LoginForm, UpdateAccountForm
 from LabManager.auth.utils import save_profile_picture
 
