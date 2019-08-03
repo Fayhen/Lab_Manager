@@ -17,7 +17,7 @@ class TypeSchema(ma.ModelSchema):
         model = PersonType
 
 
-class GenreSchema(ma.ModelSchema):
+class GenderSchema(ma.ModelSchema):
     class Meta:
         model = Gender
 
@@ -74,11 +74,14 @@ class FieldSchema(ma.ModelSchema):
 
 # Marshmallow schema inits
 type_schema = TypeSchema(strict=True)
-genre_schema = GenreSchema(strict=True)
+types_schema = TypeSchema(many=True, strict=True)
+gender_schema = GenderSchema(strict=True)
+genders_schema = GenderSchema(many=True, strict=True)
 person_schema = PersonSchema(strict=True)
-persons_schema = PersonSchema(many=True, strict=True)
+people_schema = PersonSchema(many=True, strict=True)
 user_schema = UserSchema(strict=True)
 frequency_schema = FrequencySchema(strict=True)
+frequencies_schema = FrequencySchema(many=True, strict=True)
 equipment_schema = InventorySchema(strict=True)
 equipments_schema = InventorySchema(many=True, strict=True)
 lending_schema = LendingSchema(strict=True)
