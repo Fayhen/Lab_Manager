@@ -1,5 +1,9 @@
-from flask import Blueprint, render_template
+from datetime import datetime
+from flask import Blueprint, request, jsonify, render_template
 from flask_login import login_required
+from LabManager import db
+from LabManager.dbModels import User, Notices
+from LabManager.maSchemas import notice_schema, notices_schema
 
 
 notices = Blueprint("notices", __name__)
@@ -15,3 +19,66 @@ def lab_notices():
 @login_required
 def add_notice():
     return render_template("add_notice.html", title="New Notice")
+
+
+@notices.route("/notices/all", methods=["GET"])
+def notices_all():
+    notices = Notices.query.all()
+
+    return jsonify(notices_schema.dump(notices).data)
+
+
+@notices.route("/notices/add", methods=["POST"])
+def notices_add():
+    title = request.json["title"]
+    content = request.json["content"]
+    archived = request.json["archived"]
+    user_id = request.json["user_id"]
+    date = datetime.utcnow()
+
+    new_notice = Notices(title=title, content=content, archived=archived, user_id=user_id, date=date)
+
+    db.session.add(new_notice)
+    db.session.commit()
+
+    return jsonify(notice_schema.dump(new_notice).data)
+
+
+@notices.route("/notices/<int:id>", methods=["GET"])
+def notices_fetch(id):
+    notice = Notices.query.get(id)
+
+    return jsonify(notice_schema.dump(notice).data)
+
+
+@notices.route("/notices/update/<int:id>", methods=["PUT"])
+def notices_update(id):
+    notice = Notices.query.get(id)
+
+    title = request.json["title"]
+    content = request.json["content"]
+    archived = request.json["archived"]
+    user_id = request.json["user_id"]
+    date = datetime.utcnow()
+
+    notice.title = title
+    notice.content = content
+    notice.archived = archived
+    notice.user_id = user_id
+    notice.date = date
+
+    db.session.commit()
+
+    return jsonify(notice_schema.dump(notice).data)
+
+
+@notices.route("/notices/delete/<int:id>", methods=["DELETE"])
+def notices_delete(id):
+    notice = Notices.query.get(id)
+
+    response = notice_schema.dump(notice).data
+
+    db.session.delete(notice)
+    db.session.commit()
+
+    return jsonify(response)
