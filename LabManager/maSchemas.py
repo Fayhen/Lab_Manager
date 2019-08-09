@@ -1,7 +1,7 @@
 from marshmallow import fields
 # from marshmallow_sqlalchemy import ModelSchema
 from LabManager import ma
-from LabManager.dbModels import PersonType, Gender, Person, User, FrequencyEvent, Inventory, Lendings, TechnicalIssues, Notices, FieldEvent
+from LabManager.dbModels import PersonType, Gender, Person, User, FrequencyEvent, Inventory, Lendings, TechnicalIssues, Notices, FieldEvent, helper_field_person, helper_field_equips
 
 
 # class SmartNested(fields.Nested):
@@ -58,19 +58,25 @@ class IssueSchema(ma.ModelSchema):
         model = TechnicalIssues
 
 
-
 class NoticeSchema(ma.ModelSchema):
     # user = SmartNested(UserSchema)
     class Meta:
         model = Notices
 
 
-
 class FieldSchema(ma.ModelSchema):
-
     class Meta:
         model = FieldEvent
 
+
+class FieldPerson(ma.TableSchema):
+    class Meta:
+        table = helper_field_person
+
+
+class FieldEquips(ma.TableSchema):
+    class Meta:
+        table = helper_field_equips
 
 # Marshmallow schema inits
 type_schema = TypeSchema(strict=True)
@@ -92,3 +98,6 @@ notice_schema = NoticeSchema(strict=True)
 notices_schema = NoticeSchema(many=True, strict=True)
 field_schema = FieldSchema(strict=True)
 fields_schema = FieldSchema(many=True, strict=True)
+
+fields_person_schema = FieldPerson(many=True, strict=True)
+fields_equips_schema = FieldEquips(many=True, strict=True)
