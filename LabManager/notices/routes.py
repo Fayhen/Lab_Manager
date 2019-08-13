@@ -4,6 +4,7 @@ from flask_login import login_required
 from LabManager import db
 from LabManager.dbModels import User, Notices
 from LabManager.maSchemas import notice_schema, notices_schema
+from LabManager.auth.utils import token_required
 
 
 notices = Blueprint("notices", __name__)
@@ -22,14 +23,16 @@ def add_notice():
 
 
 @notices.route("/notices/all", methods=["GET"])
-def notices_all():
+@token_required
+def notices_all(current_user):
     notices = Notices.query.all()
 
     return jsonify(notices_schema.dump(notices).data)
 
 
 @notices.route("/notices/add", methods=["POST"])
-def notices_add():
+@token_required
+def notices_add(current_user):
     title = request.json["title"]
     content = request.json["content"]
     archived = request.json["archived"]
@@ -45,15 +48,27 @@ def notices_add():
 
 
 @notices.route("/notices/<int:id>", methods=["GET"])
-def notices_fetch(id):
+@token_required
+def notices_fetch(current_user, id):
     notice = Notices.query.get(id)
+    if notice is None:
+        response = {
+                 'message': 'Notice entry does not exist.'
+                   }
+        return jsonify(response), 404
 
     return jsonify(notice_schema.dump(notice).data)
 
 
 @notices.route("/notices/update/<int:id>", methods=["PUT"])
-def notices_update(id):
+@token_required
+def notices_update(current_user, id):
     notice = Notices.query.get(id)
+    if notice is None:
+        response = {
+                 'message': 'Notice entry does not exist.'
+                   }
+        return jsonify(response), 404
 
     title = request.json["title"]
     content = request.json["content"]
@@ -73,11 +88,16 @@ def notices_update(id):
 
 
 @notices.route("/notices/delete/<int:id>", methods=["DELETE"])
-def notices_delete(id):
+@token_required
+def notices_delete(current_user, id):
     notice = Notices.query.get(id)
+    if notice is None:
+        response = {
+                 'message': 'Notice entry does not exist.'
+                   }
+        return jsonify(response), 404
 
     response = notice_schema.dump(notice).data
-
     db.session.delete(notice)
     db.session.commit()
 

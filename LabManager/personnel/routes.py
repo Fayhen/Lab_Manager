@@ -96,13 +96,15 @@ def lab_personnel():
 
 
 @personnel.route("/personnel/all", methods=["GET"])
-def personnel_all():
+@token_required
+def personnel_all(current_user):
     personnel = Person.query.all()
 
     return jsonify(people_schema.dump(personnel).data)
 
 @personnel.route("/personnel/add", methods=["POST"])
-def personnel_add():
+@token_required
+def personnel_add(current_user):
     first_name = request.json["first_name"]
     last_name = request.json["last_name"]
     middle_name = request.json["middle_name"]
@@ -136,7 +138,8 @@ def personnel_add():
 
 
 @personnel.route("/personnel/<int:id>", methods=["GET"])
-def personnel_fetch(id):
+@token_required
+def personnel_fetch(current_user, id):
     person = Person.query.get(id)
     if person is None:
         response = {
@@ -148,7 +151,8 @@ def personnel_fetch(id):
 
 
 @personnel.route("/personnel/update/<int:id>", methods=["PUT"])
-def personnel_update(id):
+@token_required
+def personnel_update(current_user, id):
     person = Person.query.get(id)
     if person is None:
         response = {
@@ -186,7 +190,8 @@ def personnel_update(id):
 
 
 @personnel.route("/personnel/delete/<int:id>", methods=["DELETE"])
-def personnel_delete(id):
+@token_required
+def personnel_delete(current_user, id):
     person = Person.query.get(id)
     if person is None:
         response = {
@@ -200,6 +205,7 @@ def personnel_delete(id):
 
     return jsonify(response)
 
+
 # Frequency events ops
 @personnel.route("/frequency")
 @login_required
@@ -207,14 +213,16 @@ def frequency():
     return render_template("frequency.html", title="Laboratory Frequency")
 
 @personnel.route("/frequency/all", methods=["GET"])
-def frequency_all():
+@token_required
+def frequency_all(current_user):
     frequencies = FrequencyEvent.query.all()
 
     return jsonify(frequencies_schema.dump(frequencies).data)
 
 
 @personnel.route("/frequency/add", methods=["POST"])
-def frequency_add():
+@token_required
+def frequency_add(current_user):
     date = datetime.strptime(request.json["date"], "%Y-%m-%d")
     entry_time = time.fromisoformat(request.json["entry_time"])
     exit_time = time.fromisoformat(request.json["exit_time"])
@@ -229,7 +237,8 @@ def frequency_add():
 
 
 @personnel.route("/frequency/<int:id>", methods=["GET"])
-def frequency_fetch(id):
+@token_required
+def frequency_fetch(current_user, id):
     frequency = FrequencyEvent.query.get(id)
     if frequency is None:
         response = {
@@ -241,7 +250,8 @@ def frequency_fetch(id):
 
 
 @personnel.route("/frequency/update/<int:id>", methods=["PUT"])
-def frequency_update(id):
+@token_required
+def frequency_update(current_user, id):
     frequency = FrequencyEvent.query.get(id)
     if frequency is None:
         response = {
@@ -265,7 +275,8 @@ def frequency_update(id):
 
 
 @personnel.route("/frequency/delete/<int:id>", methods=["DELETE"])
-def frequency_delete(id):
+@token_required
+def frequency_delete(current_user, id):
     frequency = FrequencyEvent.query.get(id)
     if frequency is None:
         response = {

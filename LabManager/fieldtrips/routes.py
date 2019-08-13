@@ -4,6 +4,7 @@ from flask_login import login_required
 from LabManager import db
 from LabManager.dbModels import Person, Inventory, FieldEvent, helper_field_person, helper_field_equips
 from LabManager.maSchemas import people_schema, equipments_schema, field_schema, fields_schema
+from LabManager.auth.utils import token_required
 
 
 fieldtrips = Blueprint("fieldtrips", __name__)
@@ -16,14 +17,16 @@ def lab_fieldtrips():
 
 
 @fieldtrips.route("/fieldtrips/all", methods=["GET"])
-def fieldtrips_all():
+@token_required
+def fieldtrips_all(current_user):
     fieldtrips = FieldEvent.query.all()
 
     return jsonify(fields_schema.dump(fieldtrips).data)
 
 
 @fieldtrips.route("/fieldtrips/<int:id>", methods=["GET"])
-def fieldtrips_fetch(id):
+@token_required
+def fieldtrips_fetch(current_user, id):
     fieldtrip = FieldEvent.query.get(id)
     if fieldtrip is None:
         response = {
@@ -62,7 +65,8 @@ def backend2():
 
 
 @fieldtrips.route("/fieldtrips/post", methods=["GET"])
-def fieldtrips_post():
+@token_required
+def fieldtrips_post(current_user):
     # To be substituted by proper queries in updated tables
     personnel = Person.query.all()
     equipments = Inventory.query.all()
@@ -74,7 +78,8 @@ def fieldtrips_post():
 
 
 @fieldtrips.route("/fieldtrips/post/add", methods=["POST"])
-def fieldtrips_add():
+@token_required
+def fieldtrips_add(current_user):
     location = request.json["location"]
     date_start = datetime.strptime(request.json["date_start"], "%Y-%m-%d")
     date_end_expected = datetime.strptime(request.json["date_end_expected"], "%Y-%m-%d")
@@ -112,7 +117,8 @@ def fieldtrips_add():
 
 
 @fieldtrips.route("/fieldtrips/update/<int:id>", methods=["PUT"])
-def fildtrips_update(id):
+@token_required
+def fieldtrips_update(current_user, id):
     fieldtrip = FieldEvent.query.get(id)
     if fieldtrip is None:
         response = {
@@ -165,7 +171,8 @@ def fildtrips_update(id):
     return jsonify(field_schema.dump(fieldtrip).data)
 
 @fieldtrips.route("/fieldtrips/delete/<int:id>", methods=["DELETE"])
-def fieldtrips_delete(id):
+@token_required
+def fieldtrips_delete(current_user, id):
     fieldtrip = FieldEvent.query.get(id)
     if fieldtrip is None:
         response = {

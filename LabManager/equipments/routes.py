@@ -4,6 +4,7 @@ from flask_login import login_required
 from LabManager import db
 from LabManager.dbModels import Inventory, Lendings, TechnicalIssues
 from LabManager.maSchemas import equipment_schema, equipments_schema, lending_schema, lendings_schema, issue_schema, issues_schema
+from LabManager.auth.utils import token_required
 
 
 equipments = Blueprint("equips", __name__)
@@ -17,7 +18,8 @@ def inventory():
 
 
 @equipments.route("/inventory/all", methods=["GET"])
-def inventory_all():
+@token_required
+def inventory_all(current_user):
     inventory = Inventory.query.all()
     result = equipments_schema.dump(inventory).data
 
@@ -25,7 +27,8 @@ def inventory_all():
 
 
 @equipments.route("/inventory/add", methods=["POST"])
-def inventory_add():
+@token_required
+def inventory_add(current_user):
     # new_data = request.json
     # load = equipment_schema.load(new_data)
     name = request.json["name"]
@@ -40,7 +43,8 @@ def inventory_add():
 
 
 @equipments.route("/inventory/<int:id>", methods=["GET"])
-def inventory_fetch(id):
+@token_required
+def inventory_fetch(current_user, id):
     equipment = Inventory.query.get(id).first()
     if equipment is None:
         response = {
@@ -54,7 +58,8 @@ def inventory_fetch(id):
 
 
 @equipments.route("/inventory/update/<int:id>", methods=["PUT"])
-def inventory_put(id):
+@token_required
+def inventory_put(current_user, id):
     equipment = Inventory.query.get(id)
     if equipment is None:
         response = {
@@ -74,7 +79,8 @@ def inventory_put(id):
 
 
 @equipments.route("/inventory/delete/<int:id>", methods=["DELETE"])
-def inventory_del(id):
+@token_required
+def inventory_del(current_user, id):
     equipment = Inventory.query.get(id)
     if equipment is None:
         response = {
@@ -96,14 +102,16 @@ def lendings():
 
 
 @equipments.route("/lendings/all", methods=["GET"])
-def lendings_all():
+@token_required
+def lendings_all(current_user):
     lendings = Lendings.query.all()
 
     return jsonify(lendings_schema.dump(lendings).data)
 
 
 @equipments.route("/lendings/add", methods=["POST"])
-def lendings_add():
+@token_required
+def lendings_add(current_user):
     lender = request.json["lender"]
     observations =  request.json["observations"]
     inventory_id =  request.json["inventory_id"]
@@ -123,7 +131,8 @@ def lendings_add():
 
 
 @equipments.route("/lendings/<int:id>", methods=["GET"])
-def lendings_fetch(id):
+@token_required
+def lendings_fetch(current_user, id):
     lending = Lendings.query.get(id)
     if lending is None:
         response = {
@@ -135,7 +144,8 @@ def lendings_fetch(id):
 
 
 @equipments.route("/lendings/update/<int:id>", methods=["PUT"])
-def lendings_put(id):
+@token_required
+def lendings_put(current_user, id):
     lending = Lendings.query.get(id)
     if lending is None:
         response = {
@@ -164,7 +174,8 @@ def lendings_put(id):
 
 
 @equipments.route("/lendings/delete/<int:id>", methods=["DELETE"])
-def lendings_delete(id):
+@token_required
+def lendings_delete(current_user, id):
     lending = Lendings.query.get(id)
     if lending is None:
         response = {
@@ -187,7 +198,8 @@ def technical():
 
 
 @equipments.route("/technical/all", methods=["GET"])
-def technical_all():
+@token_required
+def technical_all(current_user):
     issues = TechnicalIssues.query.all()
 
     return jsonify(issues_schema.dump(issues).data)
@@ -195,7 +207,8 @@ def technical_all():
 
 
 @equipments.route("/technical/add", methods=["POST"])
-def technical_add():
+@token_required
+def technical_add(current_user):
     description = request.json["description"]
     inventory_id = request.json["inventory_id"]
     
@@ -217,7 +230,8 @@ def technical_add():
 
 
 @equipments.route("/technical/<int:id>", methods=["GET"])
-def issue_fetch(id):
+@token_required
+def issue_fetch(current_user, id):
     issue = TechnicalIssues.query.get(id)
     if issue is None:
         response = {
@@ -229,7 +243,8 @@ def issue_fetch(id):
 
 
 @equipments.route("/technical/update/<int:id>", methods=["PUT"])
-def issue_put(id):
+@token_required
+def issue_put(current_user, id):
     issue = TechnicalIssues.query.get(id)
     if issue is None:
         response = {
@@ -257,7 +272,8 @@ def issue_put(id):
 
 
 @equipments.route("/technical/delete/<int:id>", methods=["DELETE"])
-def issue_delete(id):
+@token_required
+def issue_delete(current_user, id):
     issue = TechnicalIssues.query.get(id)
     if issue is None:
         response = {
