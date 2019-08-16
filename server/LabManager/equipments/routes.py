@@ -1,23 +1,18 @@
 from datetime import datetime, date
-from flask import Blueprint, request, jsonify, render_template
-from flask_login import login_required
+from flask import Blueprint, request, make_response, jsonify
 from LabManager import db
 from LabManager.dbModels import Inventory, Lendings, TechnicalIssues
-from LabManager.maSchemas import equipment_schema, equipments_schema, lending_schema, lendings_schema, issue_schema, issues_schema
+from LabManager.maSchemas import (equipment_schema, equipments_schema,
+    lending_schema, lendings_schema, issue_schema, issues_schema)
 from LabManager.auth.utils import token_required
-from LabManager.equipments.utils import update_status, query_all_available, query_all_lended, query_all_ontrip, query_all_broken
+from LabManager.equipments.utils import (update_status, query_all_available,
+    query_all_lended, query_all_ontrip, query_all_broken)
 
 
 equipments = Blueprint("equips", __name__)
 
 
 # Inventory operations
-@equipments.route("/inventory")
-@login_required
-def inventory():
-    return render_template("inventory.html", title="Equipment Inventory")
-
-
 @equipments.route("/inventory/all", methods=["GET"])
 @token_required
 def inventory_all(current_user):
@@ -78,10 +73,7 @@ def inventory_add(current_user):
 def inventory_fetch(current_user, id):
     equipment = Inventory.query.get(id).first()
     if equipment is None:
-        response = {
-                 'message': 'Inventory item does not exist.'
-                   }
-        return jsonify(response), 404
+        return make_response("Inventory item does not exist.", 404)
 
     result = equipment_schema.dump(equipment).data
 
@@ -93,10 +85,7 @@ def inventory_fetch(current_user, id):
 def inventory_put(current_user, id):
     equipment = Inventory.query.get(id)
     if equipment is None:
-        response = {
-                 'message': 'Inventory item does not exist.'
-                   }
-        return jsonify(response), 404
+        return make_response("Inventory item does not exist.", 404)
 
     name = request.json["name"]
     description = request.json["description"]
@@ -110,7 +99,7 @@ def inventory_put(current_user, id):
 
     db.session.commit()
 
-    return jsonify(equipment_schema.dump(equipment).data) # equipment_schema.jsonify(equipment)
+    return jsonify(equipment_schema.dump(equipment).data)
 
 
 @equipments.route("/inventory/delete/<int:id>", methods=["DELETE"])
@@ -118,10 +107,7 @@ def inventory_put(current_user, id):
 def inventory_del(current_user, id):
     equipment = Inventory.query.get(id)
     if equipment is None:
-        response = {
-                 'message': 'Inventory item does not exist.'
-                   }
-        return jsonify(response), 404
+        return make_response("Inventory item does not exist.", 404)
 
     db.session.delete(equipment)
     db.session.commit()
@@ -130,12 +116,6 @@ def inventory_del(current_user, id):
 
 
 # Lendings operations
-@equipments.route("/lendings")
-@login_required
-def lendings():
-    return render_template("lendings.html", title="Equipment Lendings")
-
-
 @equipments.route("/lendings/all", methods=["GET"])
 @token_required
 def lendings_all(current_user):
@@ -176,10 +156,7 @@ def lendings_add(current_user):
 def lendings_fetch(current_user, id):
     lending = Lendings.query.get(id)
     if lending is None:
-        response = {
-                 'message': 'This lending event does not exist.'
-                   }
-        return jsonify(response), 404
+        return make_response("Lending entry does not exist.", 404)
     
     return jsonify(lending_schema.dump(lending).data)
 
@@ -189,10 +166,7 @@ def lendings_fetch(current_user, id):
 def lendings_put(current_user, id):
     lending = Lendings.query.get(id)
     if lending is None:
-        response = {
-                 'message': 'This lending event does not exist.'
-                   }
-        return jsonify(response), 404
+        return make_response("Lending entry does not exist.", 404)
     
     lender = request.json["lender"]
     lend_date = request.json["lend_date"]
@@ -222,10 +196,7 @@ def lendings_put(current_user, id):
 def lendings_delete(current_user, id):
     lending = Lendings.query.get(id)
     if lending is None:
-        response = {
-                 'message': 'This lending event does not exist.'
-                   }
-        return jsonify(response), 404
+        return make_response("Lending entry does not exist.", 404)
     
     response = lending_schema.dump(lending).data
 
@@ -239,12 +210,6 @@ def lendings_delete(current_user, id):
 
 
 # Technical issues operations
-@equipments.route("/technical")
-@login_required
-def technical():
-    return render_template("technical.html", title="Technical Issues")
-
-
 @equipments.route("/technical/all", methods=["GET"])
 @token_required
 def technical_all(current_user):
@@ -292,10 +257,7 @@ def technical_add(current_user):
 def issue_fetch(current_user, id):
     issue = TechnicalIssues.query.get(id)
     if issue is None:
-        response = {
-                 'message': 'This technical issue entry does not exist.'
-                   }
-        return jsonify(response), 404
+        return make_response("Technical issue entry does not exist.", 404)
 
     return jsonify(issue_schema.dump(issue).data)
 
@@ -305,21 +267,20 @@ def issue_fetch(current_user, id):
 def issue_put(current_user, id):
     issue = TechnicalIssues.query.get(id)
     if issue is None:
-        response = {
-                 'message': 'This technical issue entry does not exist.'
-                   }
-        return jsonify(response), 404
+        return make_response("Technical issue entry does not exist.", 404)
     
     description = request.json["description"]
     inventory_id = request.json["inventory_id"]
     
     # Parse dates
     if request.json["report_date"]:
-        report_date = datetime.strptime(request.json["report_date"], "%Y-%m-%d")
+        report_date = datetime.strptime(request.json["report_date"],
+            "%Y-%m-%d")
     
     # Check 'solution_date' info and update equip status if present
     if request.json["solution_date"]:
-        solution_date = datetime.strptime(request.json["solution_date"], "%Y-%m-%d")
+        solution_date = datetime.strptime(request.json["solution_date"],
+            "%Y-%m-%d")
         update_status(issue.inventory_id, "available") 
 
     issue.description = description
@@ -337,10 +298,7 @@ def issue_put(current_user, id):
 def issue_delete(current_user, id):
     issue = TechnicalIssues.query.get(id)
     if issue is None:
-        response = {
-                 'message': 'This technical issue entry does not exist.'
-                   }
-        return jsonify(response), 404
+        return make_response("Technical issue entry does not exist.", 404)
     
     response = issue_schema.dump(issue).data
 

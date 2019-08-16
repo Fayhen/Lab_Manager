@@ -1,9 +1,10 @@
 from datetime import datetime, date, time
-from flask import Blueprint, request, jsonify, render_template
-from flask_login import login_required
+from flask import Blueprint, request, make_response, jsonify
 from LabManager import db
 from LabManager.dbModels import PersonType, Gender, Person, FrequencyEvent
-from LabManager.maSchemas import type_schema, types_schema, gender_schema, genders_schema, person_schema, people_schema, frequency_schema, frequencies_schema
+from LabManager.maSchemas import (type_schema, types_schema, gender_schema,
+    genders_schema, person_schema, people_schema, frequency_schema,
+    frequencies_schema)
 from LabManager.auth.utils import token_required
 
 
@@ -89,19 +90,15 @@ def type_delete(id):
 
     return jsonify(response)
 
+
 # Personnel ops
-@personnel.route("/personnel")
-@login_required
-def lab_personnel():
-    return render_template("personnel.html", title="Laboratory Personnel")
-
-
 @personnel.route("/personnel/all", methods=["GET"])
 @token_required
 def personnel_all(current_user):
     personnel = Person.query.all()
 
     return jsonify(people_schema.dump(personnel).data)
+
 
 @personnel.route("/personnel/add", methods=["POST"])
 @token_required
@@ -143,10 +140,7 @@ def personnel_add(current_user):
 def personnel_fetch(current_user, id):
     person = Person.query.get(id)
     if person is None:
-        response = {
-                 'message': 'This person entry does not exist.'
-                   }
-        return jsonify(response), 404
+        return make_response("Person entry does not exist.", 404)
     
     return jsonify(person_schema.dump(person).data)
 
@@ -156,10 +150,7 @@ def personnel_fetch(current_user, id):
 def personnel_update(current_user, id):
     person = Person.query.get(id)
     if person is None:
-        response = {
-                 'message': 'This person entry does not exist.'
-                   }
-        return jsonify(response), 404
+        return make_response("Person entry does not exist.", 404)
 
     first_name = request.json["first_name"]
     last_name = request.json["last_name"]
@@ -169,6 +160,7 @@ def personnel_update(current_user, id):
     institution = request.json["institution"]
     type_id = request.json["type_id"]
     gender_id = request.json["gender_id"]
+    
     # Parse dates
     if request.json["birthday"]:
         birthday = datetime.strptime(request.json["birthday"], "%Y-%m-%d")
@@ -195,10 +187,7 @@ def personnel_update(current_user, id):
 def personnel_delete(current_user, id):
     person = Person.query.get(id)
     if person is None:
-        response = {
-                 'message': 'This person entry does not exist.'
-                   }
-        return jsonify(response), 404
+        return make_response("Person entry does not exist.", 404)
     
     response = person_schema.dump(person).data
     db.session.delete(person)
@@ -208,11 +197,6 @@ def personnel_delete(current_user, id):
 
 
 # Frequency events ops
-@personnel.route("/frequency")
-@login_required
-def frequency():
-    return render_template("frequency.html", title="Laboratory Frequency")
-
 @personnel.route("/frequency/all", methods=["GET"])
 @token_required
 def frequency_all(current_user):
@@ -242,10 +226,7 @@ def frequency_add(current_user):
 def frequency_fetch(current_user, id):
     frequency = FrequencyEvent.query.get(id)
     if frequency is None:
-        response = {
-                 'message': 'This frequency event does not exist.'
-                   }
-        return jsonify(response), 404
+        return make_response("This frequency entry does not exist.", 404)
 
     return jsonify(frequency_schema.dump(frequency).data)
 
@@ -255,10 +236,7 @@ def frequency_fetch(current_user, id):
 def frequency_update(current_user, id):
     frequency = FrequencyEvent.query.get(id)
     if frequency is None:
-        response = {
-                 'message': 'This frequency event does not exist.'
-                   }
-        return jsonify(response), 404
+        return make_response("This frequency entry does not exist.", 404)
     
     date = datetime.strptime(request.json["date"], "%Y-%m-%d")
     entry_time = time.fromisoformat(request.json["entry_time"])
@@ -280,10 +258,7 @@ def frequency_update(current_user, id):
 def frequency_delete(current_user, id):
     frequency = FrequencyEvent.query.get(id)
     if frequency is None:
-        response = {
-                 'message': 'This frequency event does not exist.'
-                   }
-        return jsonify(response), 404
+        return make_response("This frequency entry does not exist.", 404)
 
     response = frequency_schema.dump(frequency).data
     db.session.delete(frequency)

@@ -1,6 +1,5 @@
 from datetime import datetime
-from flask import Blueprint, request, jsonify, render_template
-from flask_login import login_required
+from flask import Blueprint, request, make_response, jsonify
 from LabManager import db
 from LabManager.dbModels import User, Notices
 from LabManager.maSchemas import notice_schema, notices_schema
@@ -8,18 +7,6 @@ from LabManager.auth.utils import token_required
 
 
 notices = Blueprint("notices", __name__)
-
-
-@notices.route("/notices")
-@login_required
-def lab_notices():
-    return render_template("notices.html", title="Notice Board")
-
-
-@notices.route("/notices/new", methods=["GET", "POST"])
-@login_required
-def add_notice():
-    return render_template("add_notice.html", title="New Notice")
 
 
 @notices.route("/notices/all", methods=["GET"])
@@ -52,10 +39,7 @@ def notices_add(current_user):
 def notices_fetch(current_user, id):
     notice = Notices.query.get(id)
     if notice is None:
-        response = {
-                 'message': 'Notice entry does not exist.'
-                   }
-        return jsonify(response), 404
+        return make_response("Notice entry does not exist.", 404)
 
     return jsonify(notice_schema.dump(notice).data)
 
@@ -65,10 +49,7 @@ def notices_fetch(current_user, id):
 def notices_user(current_user, id):
     notices = Notices.query.filter_by(user_id=id).all()
     if notices is None:
-        response = {
-                  'message': 'No notices found for this user.'
-                    }
-        return jsonify(response)
+        return make_response("No notices found for this user.", 404)
 
     return jsonify(notices_schema.dump(notices).data)
 
@@ -78,10 +59,7 @@ def notices_user(current_user, id):
 def notices_update(current_user, id):
     notice = Notices.query.get(id)
     if notice is None:
-        response = {
-                 'message': 'Notice entry does not exist.'
-                   }
-        return jsonify(response), 404
+        return make_response("Notice entry does not exist.", 404)
 
     title = request.json["title"]
     content = request.json["content"]
@@ -105,10 +83,7 @@ def notices_update(current_user, id):
 def notices_delete(current_user, id):
     notice = Notices.query.get(id)
     if notice is None:
-        response = {
-                 'message': 'Notice entry does not exist.'
-                   }
-        return jsonify(response), 404
+        return make_response("Notice entry does not exist.", 404)
 
     response = notice_schema.dump(notice).data
     db.session.delete(notice)

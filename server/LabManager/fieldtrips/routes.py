@@ -1,20 +1,16 @@
 from datetime import datetime
-from flask import Blueprint, request, jsonify, render_template
-from flask_login import login_required
+from flask import Blueprint, request, make_response, jsonify
 from LabManager import db
-from LabManager.dbModels import Person, Inventory, FieldEvent, helper_field_person, helper_field_equips
-from LabManager.maSchemas import people_schema, equipments_schema, field_schema, fields_schema
+from LabManager.dbModels import (Person, Inventory, FieldEvent,
+    helper_field_person, helper_field_equips)
+from LabManager.maSchemas import (people_schema, equipments_schema,
+    field_schema, fields_schema)
 from LabManager.auth.utils import token_required
-from LabManager.equipments.utils import update_status, query_all_field_eligible, query_all_field_available
+from LabManager.equipments.utils import (update_status,
+    query_all_field_eligible, query_all_field_available)
 
 
 fieldtrips = Blueprint("fieldtrips", __name__)
-
-
-@fieldtrips.route("/fieldtrips")
-@login_required
-def lab_fieldtrips():
-    return render_template("fieldtrips.html", title="Field Trips")
 
 
 @fieldtrips.route("/fieldtrips/all", methods=["GET"])
@@ -30,15 +26,12 @@ def fieldtrips_all(current_user):
 def fieldtrips_fetch(current_user, id):
     fieldtrip = FieldEvent.query.get(id)
     if fieldtrip is None:
-        response = {
-                 'message': 'Field trip entry does not exist.'
-                   }
-        return jsonify(response), 404
+        return make_response("Field trip entry does not exist.", 404)
 
     return jsonify(field_schema.dump(fieldtrip).data)
 
 
-# Backend route to be deleted
+# Backend route to be deleted on the future
 @fieldtrips.route("/fieldtrips/backend1", methods=["GET"])
 def backend1():
     helper_field_person_data = db.session.query(helper_field_person).all()
@@ -53,7 +46,7 @@ def backend1():
     return jsonify(data)
 
 
-# Backend route to be deleted
+# Backend route to be deleted on the future
 @fieldtrips.route("/fieldtrips/backend2", methods=["GET"])
 def backend2():
     helper_field_equips_data = db.session.query(helper_field_equips).all()
@@ -70,7 +63,6 @@ def backend2():
 @fieldtrips.route("/fieldtrips/post", methods=["GET"])
 @token_required
 def fieldtrips_post(current_user):
-    # To be substituted by proper queries in updated tables
     personnel = Person.query.fiter_by(type_id=1).all()
     equips_field_available = query_all_field_available()
     equips_field_eligible = query_all_field_eligible()
@@ -86,15 +78,18 @@ def fieldtrips_post(current_user):
 @token_required
 def fieldtrips_add(current_user):
     location = request.json["location"]
-    date_start = datetime.strptime(request.json["date_start"], "%Y-%m-%d")
-    date_end_expected = datetime.strptime(request.json["date_end_expected"], "%Y-%m-%d")
+    date_start = datetime.strptime(request.json["date_start"],
+        "%Y-%m-%d")
+    date_end_expected = datetime.strptime(request.json["date_end_expected"],
+        "%Y-%m-%d")
     observations = request.json["observations"]
     personnel = request.json["personnel"]
     equipments = request.json["equipments"]
     
     # Check 'date_end_done' info and update equip status if present
     if request.json["date_end_done"]:
-        date_end_done = datetime.strptime(request.json["date_end_done"], "%Y-%m-%d")
+        date_end_done = datetime.strptime(request.json["date_end_done"],
+            "%Y-%m-%d")
     else:
         date_end_done = None
         for inventory_id in equipments:
@@ -131,10 +126,7 @@ def fieldtrips_add(current_user):
 def fieldtrips_update(current_user, id):
     fieldtrip = FieldEvent.query.get(id)
     if fieldtrip is None:
-        response = {
-                 'message': 'Field trip entry does not exist.'
-                   }
-        return jsonify(response), 404
+        return make_response("Field trip entry does not exist.", 404)
 
     location = request.json["location"]
     date_start = datetime.strptime(request.json["date_start"],
@@ -147,7 +139,8 @@ def fieldtrips_update(current_user, id):
     
     # Check if 'date_end_done' info on request, update equip status if present
     if request.json["date_end_done"]:
-        date_end_done = datetime.strptime(request.json["date_end_done"], "%Y-%m-%d")
+        date_end_done = datetime.strptime(request.json["date_end_done"],
+            "%Y-%m-%d")
         for inventory_id in equipments:
             update_status(inventory_id, "on_trip")
     else:
@@ -190,10 +183,7 @@ def fieldtrips_update(current_user, id):
 def fieldtrips_delete(current_user, id):
     fieldtrip = FieldEvent.query.get(id)
     if fieldtrip is None:
-        response = {
-                 'message': 'Field trip entry does not exist.'
-                   }
-        return jsonify(response), 404
+        return make_response("Field trip entry does not exist.", 404)
 
     response = field_schema.dump(fieldtrip).data
 
