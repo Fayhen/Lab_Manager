@@ -76,8 +76,6 @@ def token_required(f):
             print(e)
             invalid_msg["in"] = "line 74"
             invalid_msg["exception"] = str(e)
-            invalid_msg["retrieved token"] = token
-            invalid_msg["decoded token"] = data
             return jsonify(invalid_msg), 401
 
     return decorated

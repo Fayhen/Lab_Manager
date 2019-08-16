@@ -4,6 +4,7 @@ from flask_login import login_required
 from LabManager import db
 from LabManager.dbModels import PersonType, Gender, Person, FrequencyEvent
 from LabManager.maSchemas import type_schema, types_schema, gender_schema, genders_schema, person_schema, people_schema, frequency_schema, frequencies_schema
+from LabManager.auth.utils import token_required
 
 
 personnel = Blueprint("personnel", __name__)

@@ -59,6 +59,19 @@ def notices_fetch(current_user, id):
 
     return jsonify(notice_schema.dump(notice).data)
 
+  
+@notices.route("/notices/user/<int:id>", methods=["GET"])
+@token_required
+def notices_user(current_user, id):
+    notices = Notices.query.filter_by(user_id=id).all()
+    if notices is None:
+        response = {
+                  'message': 'No notices found for this user.'
+                    }
+        return jsonify(response)
+
+    return jsonify(notices_schema.dump(notices).data)
+
 
 @notices.route("/notices/update/<int:id>", methods=["PUT"])
 @token_required

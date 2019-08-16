@@ -30,13 +30,17 @@ class Person(db.Model):
     birthday = db.Column(db.Date)
     occupation = db.Column(db.Text)
     institution = db.Column(db.String(100))
-    imagefile = db.Column(db.String(20), nullable=False, default='default.jpg')
-    imagefile_path = db.Column(db.String, nullable=False, default=os.path.join("static/profile_pics", "default.jpg"))
+    imagefile = db.Column(db.String(20), nullable=False,
+        default='default.jpg')
+    imagefile_path = db.Column(db.String, nullable=False,
+        default=os.path.join("static/profile_pics", "default.jpg"))
     type_id = db.Column(db.Integer, db.ForeignKey(PersonType.id))
     gender_id = db.Column(db.Integer, db.ForeignKey(Gender.id))
     account = db.relationship('User', backref='own_info', lazy=True)
-    frequency = db.relationship('FrequencyEvent', backref='person_frequency', lazy=True)
-    field_events = db.relationship("FieldEvent", secondary=lambda: helper_field_person, back_populates="personnel")
+    frequency = db.relationship('FrequencyEvent',
+        backref='person_frequency', lazy=True)
+    field_events = db.relationship("FieldEvent",
+        secondary=lambda: helper_field_person, back_populates="personnel")
 
 
 class User(db.Model, UserMixin):
@@ -60,11 +64,16 @@ class Inventory(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text)
-    imagefile = db.Column(db.String(20), default='default.jpg')
-    imagefile_path = db.Column(db.String, default=os.path.join("static/equip_pics", "default.jpg"))
+    imagefile = db.Column(db.String(20),
+        default='default.jpg')
+    imagefile_path = db.Column(db.String,
+        default=os.path.join("static/equip_pics", "default.jpg"))
+    field_eligible = db.Column(db.Boolean, nullable=False, default=False)
+    status = db.Column(db.String, nullable=False, default="available")
     lendings = db.relationship('Lendings', backref='equipment', lazy=True)
     issues = db.relationship('TechnicalIssues', backref='equipment', lazy=True)
-    field_events = db.relationship("FieldEvent", secondary=lambda: helper_field_equips, back_populates="equipments")
+    field_events = db.relationship("FieldEvent", 
+        secondary=lambda: helper_field_equips, back_populates="equipments")
 
 
 class Lendings(db.Model):
@@ -82,7 +91,7 @@ class TechnicalIssues(db.Model):
     description = db.Column(db.Text, nullable=False)
     report_date = db.Column(db.Date, default=datetime.utcnow)
     solution_date = db.Column(db.Date, nullable=True)
-    inventory_id = db.Column(db.Integer, db.ForeignKey(Inventory.id))
+    inventory_id = db.Column(db.Integer,db.ForeignKey(Inventory.id))
 
 
 class Notices(db.Model):
@@ -101,8 +110,10 @@ class FieldEvent(db.Model):
     date_end_expected = db.Column(db.Date)
     date_end_done = db.Column(db.Date)
     observations = db.Column(db.Text)
-    personnel = db.relationship("Person", secondary=lambda: helper_field_person, back_populates="field_events")
-    equipments = db.relationship("Inventory", secondary=lambda: helper_field_equips, back_populates="field_events")
+    personnel = db.relationship("Person",
+        secondary=lambda: helper_field_person, back_populates="field_events")
+    equipments = db.relationship("Inventory",
+        secondary=lambda: helper_field_equips, back_populates="field_events")
 
 
 helper_field_person = db.Table("helper_field_person",

@@ -5,6 +5,7 @@ from LabManager import db
 from LabManager.dbModels import Inventory, Lendings, TechnicalIssues
 from LabManager.maSchemas import equipment_schema, equipments_schema, lending_schema, lendings_schema, issue_schema, issues_schema
 from LabManager.auth.utils import token_required
+from LabManager.equipments.utils import update_status, query_all_available, query_all_lended, query_all_ontrip, query_all_broken
 
 
 equipments = Blueprint("equips", __name__)
@@ -26,18 +27,48 @@ def inventory_all(current_user):
     return jsonify(result)
 
 
+@equipments.route("/inventory/all/available", methods=["GET"])
+@token_required
+def inventory_available(current_user):
+    available = query_all_available()
+
+    return equipments_schema.dump(available).data
+
+@equipments.route("/inventory/all/lended", methods=["GET"])
+@token_required
+def inventory_lended(current_user):
+    lended = query_all_lended()
+
+    return equipments_schema.dump(lended).data
+
+
+@equipments.route("/inventory/all/ontrip", methods=["GET"])
+@token_required
+def inventory_ontrip(current_user):
+    ontrip = query_all_ontrip()
+
+    return equipments_schema.dump(ontrip).data
+
+
+@equipments.route("/inventory/all/broken", methods=["GET"])
+@token_required
+def inventory_broken(current_user):
+    broken = query_all_broken()
+
+    return equipments_schema.dump(broken).data
+
+
 @equipments.route("/inventory/add", methods=["POST"])
 @token_required
 def inventory_add(current_user):
-    # new_data = request.json
-    # load = equipment_schema.load(new_data)
     name = request.json["name"]
     description = request.json["description"]
-    new_equip = Inventory(name=name, description=description)
+    field_eligible = request.json["field_eligible"]
+    new_equip = Inventory(name=name, description=description,
+        field_eligible=field_eligible, status="available")
+
     db.session.add(new_equip)
     db.session.commit()
-
-    # equipment_schema = new_equip.__marshmallow__()
 
     return jsonify(equipment_schema.dump(new_equip).data)
 
@@ -69,9 +100,13 @@ def inventory_put(current_user, id):
 
     name = request.json["name"]
     description = request.json["description"]
+    field_eligible = request.json["field_eligible"]
+    status = request.json["status"]
 
     equipment.name = name
     equipment.description = description
+    equipment.field_eligible = field_eligible
+    equipment.status = status
 
     db.session.commit()
 
@@ -115,15 +150,21 @@ def lendings_add(current_user):
     lender = request.json["lender"]
     observations =  request.json["observations"]
     inventory_id =  request.json["inventory_id"]
-
-    lend_date = datetime.strptime(request.json["lend_date"], "%Y-%m-%d")
+    
     return_expected = datetime.strptime(request.json["lend_date"], "%Y-%m-%d")
     if request.json["lend_date"]:
         return_done = datetime.strptime(request.json["lend_date"], "%Y-%m-%d")
-        new_lending = Lendings(lender=lender, lend_date=lend_date, return_expected=return_expected, return_done=return_done, observations=observations, inventory_id=inventory_id)
+        new_lending = Lendings(lender=lender, lend_date=lend_date,
+            return_expected=return_expected, return_done=return_done,
+            observations=observations, inventory_id=inventory_id)
     else:
-        new_lending = Lendings(lender=lender, lend_date=lend_date, return_expected=return_expected, observations=observations, inventory_id=inventory_id)
+        new_lending = Lendings(lender=lender, lend_date=lend_date,
+        return_expected=return_expected, observations=observations,
+        inventory_id=inventory_id)
 
+    # Add 'lended' status to the equipment
+    update_status(new_lending.inventory_id, "lended")
+    
     db.session.add(new_lending)
     db.session.commit()
 
@@ -165,8 +206,11 @@ def lendings_put(current_user, id):
     lending.inventory_id = inventory_id
     lending.lend_date = datetime.strptime(lend_date, "%Y-%m-%d")
     lending.return_expected = datetime.strptime(return_expected, "%Y-%m-%d")
+    
+    # Check 'return_done' info and update equip status if present
     if return_done:
         lending.return_done = datetime.strptime(return_done, "%Y-%m-%d")
+        update_status(lending.new_lending.inventory_id, "available")
     
     db.session.commit()
 
@@ -184,6 +228,10 @@ def lendings_delete(current_user, id):
         return jsonify(response), 404
     
     response = lending_schema.dump(lending).data
+
+    # Ensure equipments status is reverted to default 'available'
+    update_status(lending.inventory_id, "available")
+
     db.session.delete(lending)
     db.session.commit()
 
@@ -214,19 +262,29 @@ def technical_add(current_user):
     
     # Parse dates
     if request.json["report_date"]:
-        report_date = datetime.strptime(request.json["report_date"], "%Y-%m-%d")
+        report_date = datetime.strptime(request.json["report_date"],
+            "%Y-%m-%d")
     else:
         report_date = date.today()
+
     if request.json["solution_date"]:
-        solution_date = datetime.strptime(request.json["solution_date"], "%Y-%m-%d")
+        solution_date = datetime.strptime(request.json["solution_date"],
+            "%Y-%m-%d")
     else:
         solution_date = None
     
-    new_issue = TechnicalIssues(description=description, report_date=report_date, solution_date=solution_date, inventory_id=inventory_id)
+    new_issue = TechnicalIssues(description=description,
+        report_date=report_date, solution_date=solution_date,
+        inventory_id=inventory_id)
+
+    # Add 'broken' status to equipment
+    update_status(new_issue.inventory_id, "broken")
+
     db.session.add(new_issue)
     db.session.commit()
 
     return jsonify(issue_schema.dump(new_issue).data)
+
 
 
 @equipments.route("/technical/<int:id>", methods=["GET"])
@@ -235,7 +293,7 @@ def issue_fetch(current_user, id):
     issue = TechnicalIssues.query.get(id)
     if issue is None:
         response = {
-                 'message': 'This technical issue does not exist.'
+                 'message': 'This technical issue entry does not exist.'
                    }
         return jsonify(response), 404
 
@@ -248,7 +306,7 @@ def issue_put(current_user, id):
     issue = TechnicalIssues.query.get(id)
     if issue is None:
         response = {
-                 'message': 'This technical issue does not exist.'
+                 'message': 'This technical issue entry does not exist.'
                    }
         return jsonify(response), 404
     
@@ -258,8 +316,11 @@ def issue_put(current_user, id):
     # Parse dates
     if request.json["report_date"]:
         report_date = datetime.strptime(request.json["report_date"], "%Y-%m-%d")
+    
+    # Check 'solution_date' info and update equip status if present
     if request.json["solution_date"]:
         solution_date = datetime.strptime(request.json["solution_date"], "%Y-%m-%d")
+        update_status(issue.inventory_id, "available") 
 
     issue.description = description
     issue.report_date = report_date
@@ -277,11 +338,15 @@ def issue_delete(current_user, id):
     issue = TechnicalIssues.query.get(id)
     if issue is None:
         response = {
-                 'message': 'This technical issue does not exist.'
+                 'message': 'This technical issue entry does not exist.'
                    }
         return jsonify(response), 404
     
     response = issue_schema.dump(issue).data
+
+    # Ensure equipments status is reverted to default 'available'
+    update_status(issue.inventory_id, "available")
+
     db.session.delete(issue)
     db.session.commit()
 
