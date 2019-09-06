@@ -5,12 +5,12 @@ const routes = [
     component: () => import('layouts/Layout.vue'),
     children: [
       { path: '', component: () => import('pages/Index.vue') },
-      { path: '/personnel', component: () => import('pages/Personnel.vue') },
-      { path: '/inventory', component: () => import('pages/Inventory.vue') },
-      { path: '/fieldtrips', component: () => import('pages/Fieldtrips') },
-      { path: '/news', component: () => import('pages/News') },
-      { path: '/calendar', component: () => import('pages/Calendar') },
-      { path: '/notices', component: () => import('pages/Notices') },
+      { path: '/personnel', component: () => import('components/personnel/Personnel.vue') },
+      { path: '/inventory', component: () => import('components/inventory/Inventory.vue') },
+      { path: '/fieldtrips', component: () => import('components/fieldtrips/Fieldtrips') },
+      { path: '/calendar', component: () => import('components/calendar/Calendar') },
+      { path: '/news', component: () => import('components/news/News') },
+      { path: '/notices', component: () => import('components/notices/Notices') },
     ],
   },
 ];

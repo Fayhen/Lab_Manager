@@ -25,7 +25,9 @@
 
     <q-drawer v-model="right" side="right" bordered>
       <!-- Notices drawer content -->
-      Insert Notices frame
+      <auth />
+      <notices />
+      <news />
     </q-drawer>
 
     <q-page-container>
@@ -44,8 +46,13 @@
 </template>
 
 <script>
+import Auth from '../components/auth/Auth';
+import Notices from '../components/notices/Notices';
+import News from '../components/news/News';
+
 export default {
   name: 'Layout',
+  components: { Notices, Auth, News },
   data() {
     return {
       right: true,
