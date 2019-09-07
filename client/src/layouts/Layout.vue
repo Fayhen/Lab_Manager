@@ -1,11 +1,11 @@
 <template>
   <q-layout view="hHh lpR fFf">
 
-    <q-header elevated class="bg-primary text-white">
+    <q-header elevated class="bg-green-6 text-white">
       <q-toolbar>
-        <q-toolbar-title>
+        <q-toolbar-title class="apptitle">
           <q-avatar>
-            <img src="https://cdn.quasar.dev/logo/svg/quasar-logo.svg" width="20">
+            <img src="~/assets/AppIconBackgroundWhite.svg" width="20">
           </q-avatar>
             Laborator.io
         </q-toolbar-title>
@@ -15,7 +15,6 @@
           <q-route-tab to="/personnel" label="Personnel" />
           <q-route-tab to="/inventory" label="Inventory" />
           <q-route-tab to="/fieldtrips" label="Fieldtrips" />
-          <q-route-tab to="/news" label="News" />
           <q-route-tab to="/calendar" label="Calendar" />
         </q-tabs>
 
@@ -34,10 +33,10 @@
       <router-view />
     </q-page-container>
 
-    <q-footer elevated class="bg-grey-8 text-white">
+    <q-footer elevated class="bg-grey-8 text-white apptitle">
       <q-toolbar>
-        <q-toolbar-title>
-          Laborator.io
+        <q-toolbar-title class="text-body2">
+          Laborator.io - v.0.0.x
         </q-toolbar-title>
       </q-toolbar>
     </q-footer>

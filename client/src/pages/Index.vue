@@ -1,6 +1,6 @@
 <template>
   <q-page class="flex flex-center">
-    <img alt="Quasar logo" src="~assets/quasar-logo-full.svg">
+    <img alt="Laborator.io logo" style="max-width: 350px" src="~assets/LabLogo.svg">
   </q-page>
 </template>
 
