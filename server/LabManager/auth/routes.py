@@ -137,4 +137,7 @@ def auth_login():
     return make_response("Could not verify.", 401, {"WWW-Authenticate": "Basic-realm='Login required."})
 
 
-
+@auth.route("/auth/test", methods=["GET"])
+def auth_test():
+    
+    return make_response("Python server says 'hi'. :D", 200)
