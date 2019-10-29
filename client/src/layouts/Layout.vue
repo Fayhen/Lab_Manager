@@ -23,10 +23,9 @@
     </q-header>
 
     <q-drawer v-model="right" side="right" bordered>
-      <!-- Notices drawer content -->
       <auth />
-      <notices />
-      <news />
+      <notices class="hidden" />
+      <news class="hidden" />
     </q-drawer>
 
     <q-page-container>
