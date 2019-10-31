@@ -26,16 +26,16 @@ def users_add():
     raw_password = request.json["password"]
     password = bcrypt.generate_password_hash(raw_password).decode("utf-8")
 
-    if request.json["person_id"]:
-        person_id = request.json["person_id"]
-    else:
-        new_person = Person(
-            type_id = 1,
-            gender_id = 3
-        )
-        db.session.add(new_person)
-        db.session.commit()
-        person_id = new_person.id
+    # if request.json["person_id"]:
+    #     person_id = request.json["person_id"]
+    # else:
+    new_person = Person(
+        type_id = 1,
+        gender_id = 3
+    )
+    db.session.add(new_person)
+    db.session.commit()
+    person_id = new_person.id
     
     new_user = User(
         username=username,
@@ -47,7 +47,7 @@ def users_add():
     db.session.add(new_user)
     db.session.commit()
 
-    return jsonify(user_schema.dump(new_user).data)
+    return make_response(jsonify(user_schema.dump(new_user).data), 201)
 
 
 @auth.route("/auth/<int:id>", methods=["GET"])
@@ -55,9 +55,9 @@ def users_add():
 def users_fetch(current_user, id):
     user = User.query.get(id)
     if user is None:
-        return make_response("Field trip entry does not exist.", 404)
+        return make_response("User does not exist.", 404)
 
-    return jsonify(user_schema.dump(user).data)
+    return make_response(jsonify(user_schema.dump(user).data), 201)
 
 
 @auth.route("/auth/update/<int:id>", methods=["PUT"])
@@ -65,7 +65,7 @@ def users_fetch(current_user, id):
 def users_update(current_user, id):
     user = User.query.get(id)
     if user is None:
-        return make_response("Field trip entry does not exist.", 404)
+        return make_response("User does not exist.", 404)
 
     username = request.json["username"]
     email = request.json["email"]
@@ -80,7 +80,7 @@ def users_update(current_user, id):
 
     db.session.commit()
 
-    return jsonify(user_schema.dump(user).data)
+    return make_response(jsonify(user_schema.dump(user).data), 202)
 
 
 @auth.route("/auth/delete/<int:id>", methods=["DELETE"])
@@ -89,7 +89,7 @@ def users_delete(current_user, id):
     user = User.query.get(id)
     person_id = user.person_id
     if user is None:
-        return make_response("Field trip entry does not exist.", 404)
+        return make_response("User does not exist.", 404)
 
     delete_person = request.json["delete_person"]
     response = user_schema.dump(user).data
@@ -113,19 +113,19 @@ def users_delete(current_user, id):
 
 @auth.route("/auth/login", methods=["POST"])
 def auth_login():
-    auth = request.authorization
+    auth = request.json["user"]
     
     # Check if data is present
-    if not auth or not auth.username or not auth.password:
+    if not auth or not auth["email"] or not auth["password"]:
         return make_response("Could not verify.", 401, {"WWW-Authenticate": "Basic-realm='Login required."})
 
     # Query user from db
-    user = User.query.filter_by(username=auth.username).first()
+    user = User.query.filter_by(email=auth["email"]).first()
     if user is None:
-        return make_response("Field trip entry does not exist.", 404)
+        return make_response("User entry does not exist.", 404)
 
     # Check password and generate token
-    if bcrypt.check_password_hash(user.password, auth.password):
+    if bcrypt.check_password_hash(user.password, auth["password"]):
         token = jwt.encode({
             "id": user.id,
             "username": user.username,

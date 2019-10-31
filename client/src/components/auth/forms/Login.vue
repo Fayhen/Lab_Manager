@@ -18,17 +18,6 @@
         standout="bg-green-3 text-white"
         :rules="[val => !!val || 'This field is required']"
         />
-      <q-input
-        ref="confirmPassword"
-        type="password"
-        label="Confirm password"
-        v-model="confirmPassword"
-        standout="bg-green-3 text-white"
-        :rules="[
-          val => val === password || 'Passwords do no match',
-          val => !!val || 'This field is required'
-          ]"
-        />
       <div class="text-center">
         <q-btn
           label="Submit"
@@ -47,7 +36,6 @@ export default {
     return {
       email: '',
       password: '',
-      confirmPassword: '',
     };
   },
   methods: {
@@ -66,6 +54,18 @@ export default {
             message: 'There is a problem in the form.',
             icon: 'report_problem',
           });
+        });
+
+      const user = { email: this.email, password: this.password };
+
+      this.$axios.post('/auth/login', { user })
+        .then((res) => {
+          this.$axios.defaults.headers.common.Authorization = `Bearer ${res.data.token}`;
+          this.$store.state.token = res.data.token;
+          this.$store.state.isAuthenticated = true;
+        })
+        .catch((err) => {
+          console.log(err);
         });
     },
   },

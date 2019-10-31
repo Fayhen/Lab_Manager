@@ -70,26 +70,6 @@ export default {
   },
   methods: {
     register() {
-      // this.$refs.username.validate();
-      // this.$refs.email.validate();
-      // this.$refs.password.validate();
-      // this.$refs.confirmPassword.validate();
-
-      // if (
-      //   this.$refs.username.hasError
-      //   || this.$refs.email.hasError
-      //   || this.$refs.password.hasError
-      //   || this.$refs.confirmPassword.hasError
-      // ) {
-      //   this.formHasError = true;
-      // } else {
-      //   this.$q.notify({
-      //     icon: 'done',
-      //     position: 'top',
-      //     color: 'positive',
-      //     message: 'Submitted',
-      //   });
-      // }
       this.$refs.registerForm.validate(true)
         .then(() => {
           this.$q.notify({
@@ -97,7 +77,32 @@ export default {
             color: 'positive',
             message: 'Submitted',
           });
+        })
+        .catch(() => {
+          this.$q.notify({
+            color: 'negative',
+            message: 'There is a problem in the form.',
+            icon: 'report_problem',
+          });
         });
+
+      const newUser = {
+        username: this.username,
+        email: this.email,
+        password: this.password,
+      };
+
+      this.$axios.post('/auth/add', newUser)
+        .then((res) => {
+          this.$q.notify({
+            icon: 'done',
+            color: 'positive',
+            message: `Account created for ${res.data.username}.`,
+          });
+        });
+
+      // Object.assign(this.$data, this.$options.data());
+      // this.$refs.registerForm.resetValidation();
     },
   },
 };
