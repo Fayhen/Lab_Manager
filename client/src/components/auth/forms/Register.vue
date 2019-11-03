@@ -52,6 +52,13 @@
           type="submit"
           class="bg-green-6 text-white"
           />
+        <br>
+        <q-btn outline
+          label="Already registered?"
+          @click="toggle"
+          size="sm" color="green-6"
+          class="q-mt-sm"
+          />
       </div>
     </q-form>
   </div>
@@ -69,40 +76,57 @@ export default {
     };
   },
   methods: {
-    register() {
-      this.$refs.registerForm.validate(true)
-        .then(() => {
-          this.$q.notify({
-            icon: 'done',
-            color: 'positive',
-            message: 'Submitted',
-          });
-        })
-        .catch(() => {
-          this.$q.notify({
-            color: 'negative',
-            message: 'There is a problem in the form.',
-            icon: 'report_problem',
-          });
-        });
-
-      const newUser = {
-        username: this.username,
-        email: this.email,
-        password: this.password,
-      };
-
+    sendData(newUser) {
       this.$axios.post('/auth/add', newUser)
         .then((res) => {
           this.$q.notify({
             icon: 'done',
             color: 'positive',
-            message: `Account created for ${res.data.username}.`,
+            message: `Account created for ${res.data.username}. You can now log in.`,
+          });
+          this.toggle();
+        })
+        .catch((err) => {
+          if (err.response.status === 409) {
+            this.$q.notify({
+              color: 'negative',
+              message: 'Username or email already exists. Please try using other ones.',
+              icon: 'report_problem',
+            });
+          } else {
+            this.$q.notify({
+              color: 'negative',
+              message: 'Registration unsuccessful. Please try again.',
+              icon: 'report_problem',
+            });
+          }
+        });
+    },
+    register() {
+      this.$refs.registerForm.validate(true)
+        .then(() => {
+          const newUser = {
+            username: this.username,
+            email: this.email,
+            password: this.password,
+          };
+          this.sendData(newUser);
+          this.username = '';
+          this.email = '';
+          this.password = '';
+          this.confirmPassword = '';
+          this.$refs.registerForm.reset();
+        })
+        .catch(() => {
+          this.$q.notify({
+            color: 'negative',
+            message: 'Invalid form data. Can not submit.',
+            icon: 'report_problem',
           });
         });
-
-      // Object.assign(this.$data, this.$options.data());
-      // this.$refs.registerForm.resetValidation();
+    },
+    toggle() {
+      this.$emit('toggle');
     },
   },
 };

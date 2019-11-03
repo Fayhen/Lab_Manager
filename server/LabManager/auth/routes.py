@@ -22,17 +22,22 @@ def users_all(current_user):
 @auth.route("/auth/add", methods=["POST"])
 def users_add():
     username = request.json["username"]
+    query_name = User.query.filter_by(username=username).first()
+    if query_name is not None:
+        return make_response("Resource param already exists.", 409)
+    
     email = request.json["email"]
+    query_email = User.query.filter_by(email=email).first()
+    if query_email is not None:
+        return make_response("Resource param already exists.", 409)
+
     raw_password = request.json["password"]
     password = bcrypt.generate_password_hash(raw_password).decode("utf-8")
 
     # if request.json["person_id"]:
     #     person_id = request.json["person_id"]
     # else:
-    new_person = Person(
-        type_id = 1,
-        gender_id = 3
-    )
+    new_person = Person()
     db.session.add(new_person)
     db.session.commit()
     person_id = new_person.id
@@ -132,7 +137,7 @@ def auth_login():
             "exp": datetime.datetime.utcnow() + datetime.timedelta(minutes=30)
         }, app.config["SECRET_KEY"])
 
-        return jsonify({"token": token.decode("UTF-8")})
+        return jsonify({"token": token.decode("UTF-8"), "username": user.username})
 
     return make_response("Could not verify.", 401, {"WWW-Authenticate": "Basic-realm='Login required."})
 
