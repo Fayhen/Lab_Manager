@@ -44,13 +44,17 @@ module.exports = function (ctx) {
         'QToolbar',
         'QToolbarTitle',
         'QBtn',
+        'QImg',
         'QIcon',
         'QList',
         'QItem',
         'QItemSection',
         'QItemLabel',
         'QForm',
-        'QInput'
+        'QInput',
+        'QCard',
+        'QCardSection',
+        'QCardActions'
       ],
 
       directives: [

@@ -1,46 +1,46 @@
 <template>
   <div style="max-width: 90%" class="q-ml-auto q-mr-auto">
     <q-form ref="registerForm" @submit.prevent.stop="register">
-      <q-input
+      <q-input outlined
         ref="username"
         label="Username"
-        placeholder="Your desired username"
         v-model="username"
+        placeholder="Your desired username"
+        color="green-6"
         counter maxlength="30"
-        standout="bg-green-3 text-white"
         :rules="[
           val => !!val || 'This field is required',
           val => val.length <= 30 || 'Please use maximum 30 characters'
           ]"
         />
       <q-input
-        ref="email"
+        ref="email" outlined
         type="email"
         label="Email"
-        placeholder="youremail@email.com"
         v-model="email"
+        placeholder="youremail@email.com"
+        color="green-6"
         counter maxlength="30"
-        standout="bg-green-3 text-white"
         :rules="[
           val => !!val || 'This field is required',
           val => val.length <= 30 || 'Please use maximum 30 characters'
           ]"
         />
-      <q-input
+      <q-input outlined
         ref="password"
         type="password"
         label="Password"
         v-model="password"
+        color="green-6"
         counter maxlength="12"
-        standout="bg-green-3 text-white"
         :rules="[val => !!val || 'This field is required']"
         />
-      <q-input
+      <q-input outlined
         ref="confirmPassword"
         type="password"
         label="Confirm password"
         v-model="confirmPassword"
-        standout="bg-green-3 text-white"
+        color="green-6"
         :rules="[
           val => val === password || 'Passwords do no match',
           val => !!val || 'This field is required'
@@ -50,7 +50,7 @@
         <q-btn
           label="Submit"
           type="submit"
-          class="bg-green-6 text-white"
+          class="q-mt-sm bg-green-6 text-white"
           />
         <br>
         <q-btn outline
