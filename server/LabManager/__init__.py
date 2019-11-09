@@ -3,7 +3,6 @@ from flask_cors import CORS
 from flask_sqlalchemy import SQLAlchemy
 from flask_marshmallow import Marshmallow
 from flask_bcrypt import Bcrypt
-from flask_login import LoginManager
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = 'changeme' # Mandatory to change this on deploy
@@ -12,9 +11,6 @@ cors = CORS(app, resources={r'/*': {'origins': '*'}}) # Restrict to frontend hos
 db = SQLAlchemy(app)
 ma = Marshmallow(app)
 bcrypt = Bcrypt(app)
-login_manager = LoginManager(app)
-login_manager.login_view = "auth.logon"
-login_manager.login_message = "This page is restricted. Please login to access."
 
 # These imports below will avoid circular imports
 from LabManager.auth.routes import auth

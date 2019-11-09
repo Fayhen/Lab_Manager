@@ -1,10 +1,8 @@
 import os
 from datetime import datetime
-from flask_login import UserMixin
-from LabManager import db, login_manager
+from LabManager import db
 
 
-@login_manager.user_loader
 def user_loader(user_id):
     return User.query.get(int(user_id))
 
@@ -43,7 +41,7 @@ class Person(db.Model):
         secondary=lambda: helper_field_person, back_populates="personnel")
 
 
-class User(db.Model, UserMixin):
+class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(20), unique=True, nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)

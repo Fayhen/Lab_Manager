@@ -5,7 +5,7 @@ from flask import Blueprint, request, make_response, jsonify
 from LabManager import app, db, bcrypt
 from LabManager.dbModels import PersonType, Gender, Person, User
 from LabManager.maSchemas import user_schema, users_schema, person_schema, profile_schema
-from LabManager.auth.utils import save_profile_picture, token_required
+from LabManager.auth.utils import token_required
 
 
 auth = Blueprint("auth", __name__)
