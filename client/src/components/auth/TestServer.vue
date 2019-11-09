@@ -3,6 +3,8 @@
 </template>
 
 <script>
+import { logout } from '../../store/state.js';
+
 export default {
   name: 'TestServer',
   data() {
@@ -18,6 +20,8 @@ export default {
           console.log(this.status);
         })
         .catch(() => {
+          logout();
+          this.$emit('logout');
           this.$q.notify({
             color: 'negative',
             position: 'top',

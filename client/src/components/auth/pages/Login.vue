@@ -27,9 +27,9 @@
         <br>
         <q-btn outline
           label="New user?"
-          @click="toggle"
           size="sm" color="green-6"
           class="q-mt-sm"
+          @click="toggle"
           />
       </div>
     </q-form>

@@ -4,7 +4,7 @@ import datetime
 from flask import Blueprint, request, make_response, jsonify
 from LabManager import app, db, bcrypt
 from LabManager.dbModels import PersonType, Gender, Person, User
-from LabManager.maSchemas import user_schema, users_schema, person_schema
+from LabManager.maSchemas import user_schema, users_schema, person_schema, profile_schema
 from LabManager.auth.utils import save_profile_picture, token_required
 
 
@@ -57,9 +57,16 @@ def users_add():
 
 @auth.route("/auth/user", methods=["GET"])
 @token_required
-def users_fetch(current_user):
+def user_fetch(current_user):
 
-    return make_response(jsonify(user_schema.dump(current_user).data), 201)
+    return make_response(jsonify(user_schema.dump(current_user).data), 202)
+
+
+@auth.route("/auth/profile", methods=["GET"])
+@token_required
+def get_profile(current_user):
+
+    return make_response(jsonify(profile_schema.dump(current_user).data), 202)
 
 
 @auth.route("/auth/update/<int:id>", methods=["PUT"])

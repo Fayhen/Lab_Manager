@@ -43,6 +43,7 @@ module.exports = function (ctx) {
         'QRouteTab',
         'QToolbar',
         'QToolbarTitle',
+        'QAvatar',
         'QBtn',
         'QImg',
         'QIcon',

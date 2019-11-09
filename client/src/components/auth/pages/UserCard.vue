@@ -1,28 +1,21 @@
 <template>
   <div>
-      <q-card flat square>
-      <q-img src="https://cdn.quasar.dev/img/parallax2.jpg">
-        <div class="absolute-bottom">
-          <div class="text-h6">{{ user.username }}</div>
-          <div class="text-subtitle2">{{ user.email }}</div>
+    <q-toolbar class="column">
+      <div class="full-width row justify-between ">
+        <div class="text-h6 text-green-10 text-weight-regular">
+          <q-avatar>
+            <img src="https://cdn.quasar.dev/logo/svg/quasar-logo.svg">
+          </q-avatar>
+          {{ user.username }}
         </div>
-      </q-img>
-
-      <q-card-actions align="right">
-        <q-btn outline
-        label="My Profile"
-        type="submit"
-        size="sm" color="green-6"
-        />
-        <q-btn outline
-        label="Logout"
-        type="submit"
-        size="sm" color="green-6"
-        class="q-ml-sm"
-        @click="endSession()"
-        />
-      </q-card-actions>
-    </q-card>
+        <div class="justify-end">
+          <q-btn flat round color="green-6" icon="perm_identity"
+            @click="openProfile()" />
+          <q-btn flat round color="green-6" icon="exit_to_app"
+            @click="endSession()"/>
+        </div>
+      </div>
+    </q-toolbar>
   </div>
 </template>
 
@@ -42,10 +35,12 @@ export default {
     },
   },
   mounted() {
-    console.log('mounted hook at UserCard calling update()');
-    update();
+    update('UserCard component on Auth module.');
   },
   methods: {
+    openProfile() {
+      this.$router.push('/profile');
+    },
     endSession() {
       logout();
       this.$emit('logout');

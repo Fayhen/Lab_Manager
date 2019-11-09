@@ -39,11 +39,19 @@ export const fetchUser = () => {
         email: res.data.email,
       };
       setUser(user);
+    })
+    .catch((err) => {
+      console.log(err);
     });
 };
 
-export const update = () => {
+export const update = (_where) => {
+  if (_where) {
+    console.log(`Called update() from ${_where}`);
+  }
   if (localStorage.token) {
+    const token = JSON.parse(localStorage.token);
+    axios.defaults.headers.common.Authorization = `Bearer ${token}`;
     setAuth(true);
     fetchUser();
   } else {
@@ -58,5 +66,5 @@ export const update = () => {
 
 export const logout = () => {
   localStorage.clear();
-  update();
+  update('Logout action inside the store.');
 };

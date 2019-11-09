@@ -55,9 +55,9 @@
         <br>
         <q-btn outline
           label="Already registered?"
-          @click="toggle"
           size="sm" color="green-6"
           class="q-mt-sm"
+          @click="toggle"
           />
       </div>
     </q-form>

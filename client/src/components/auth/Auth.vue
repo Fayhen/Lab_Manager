@@ -1,19 +1,18 @@
 <template>
   <div class="q-mt-sm text-center text-body-1">
-    <user-card
-      @logout="toggleUserCard()" v-bind:class="{ hidden: !showAuth }" />
+    <user-card v-bind:class="{ hidden: !showAuth }"
+      @logout="userOut()" />
     <div class="q-mt-sm" v-bind:class="{ hidden: showAuth }">
       <p>Welcome, visitor!</p>
       <p>Please log in to use Laborator.io</p>
-      <login-form
-        @toggle="toggle()" @login="toggleUserCard()"
-        v-bind:class="{ hidden: showLogin }" />
-      <register-form
-        @toggle="toggle()" v-bind:class="{ hidden: showRegister }" />
+      <login-form v-bind:class="{ hidden: showLogin }"
+        @toggle="toggle()" @login="userIn()" />
+      <register-form v-bind:class="{ hidden: showRegister }"
+        @toggle="toggle()" />
     </div>
     <div>
     </div>
-    <test-server />
+    <test-server @logout="userOut()" />
   </div>
 </template>
 
@@ -42,8 +41,12 @@ export default {
       this.showLogin = !this.showLogin;
       this.showRegister = !this.showRegister;
     },
-    toggleUserCard() {
-      this.showAuth = !this.showAuth;
+    userIn() {
+      this.showAuth = true;
+    },
+    userOut() {
+      this.showAuth = false;
+      this.$router.push('/');
     },
   },
   components: {

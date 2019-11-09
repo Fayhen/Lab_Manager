@@ -11,6 +11,7 @@ const routes = [
       { path: '/calendar', component: () => import('components/calendar/Calendar') },
       { path: '/news', component: () => import('components/news/News') },
       { path: '/notices', component: () => import('components/notices/Notices') },
+      { path: '/profile', component: () => import('components/auth/pages/Profile') },
     ],
   },
 ];
