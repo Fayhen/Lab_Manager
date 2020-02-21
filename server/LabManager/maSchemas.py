@@ -1,100 +1,103 @@
-# from marshmallow import fields
-# from marshmallow_sqlalchemy import ModelSchema
+from marshmallow import Schema, fields
 from LabManager import ma
-# from LabManager.dbModels import PersonType, Gender, Person, User, FrequencyEvent, Inventory, Lendings, TechnicalIssues, Notices, FieldEvent, helper_field_person, helper_field_equips
-import LabManager.dbModels as models
 
+class TypeSchema(Schema):
+    id = fields.Int()
+    type_name = fields.Str()
+    person = fields.List(fields.Nested(lambda: PersonSchema, only=("id",
+        "first_name", "last_name")))
 
-# class SmartNested(fields.Nested):
-#     def serialize(self, attr, obj, accessor=None):
-#         if attr not in obj.__dict__:
-#             return {"id": int(getattr(obj, attr + "_id"))}
-#         return super(SmartNested, self).serialize(attr, obj, accessor)
+class GenderSchema(Schema):
+    id = fields.Int()
+    gender_name = fields.Str()
+    person = fields.List(fields.Nested(lambda: PersonSchema, only=("id",
+        "first_name", "last_name")))
 
+class PersonSchema(Schema):
+    id = fields.Int()
+    first_name = fields.Str()
+    last_name = fields.Str()
+    middle_name = fields.Str()
+    phone = fields.Str()
+    birthday = fields.Str()
+    occupation = fields.Str()
+    institution = fields.Str()
+    is_visitor = fields.Bool()
+    # type_id = fields.Int()
+    # gender_id = fields.Int()
+    person_type = fields.Nested(TypeSchema, only=("id", "type_name",))
+    person_gender = fields.Nested(GenderSchema, only=("id", "gender_name",))
+    account = fields.List(fields.Nested(lambda: UserSchema))
 
-# Marshmallow schema definitions
-class TypeSchema(ma.ModelSchema):
-    class Meta:
-        model = models.PersonType
+class UserSchema(Schema):
+    username = fields.Str()
+    email = fields.Str()
+    created = fields.Str()
+    last_modified = fields.Str()
 
+class ProfileSchema(Schema):
+    username = fields.Str()
+    email = fields.Str()
+    # person_id = fields.Int()
+    own_info = fields.Nested(PersonSchema, only=("first_name", "last_name",
+        "middle_name", "phone", "birthday", "occupation", "institution",
+        "person_gender")) #This works. own_info is the backref used on the parent Model on the relationship
 
-class GenderSchema(ma.ModelSchema):
-    class Meta:
-        model = models.Gender
+class FrequencySchema(Schema):
+    id = fields.Int()
+    date = fields.Str()
+    entry_time = fields.Str()
+    exit_time = fields.Str()
+    # person_id = fields.Int()
+    person_frequency = fields.Nested(PersonSchema, only=("first_name",
+        "last_name", "middle_name"))
 
+class InventorySchema(Schema):
+    id = fields.Int()
+    name = fields.Str()
+    description = fields.Str()
+    buy_date = fields.Str()
+    field_eligible = fields.Bool()
+    status = fields.Str()
+    lendings = fields.List(fields.Nested(lambda: LendingSchema, only=("id",)))
+    issues = fields.List(fields.Nested(lambda: IssueSchema, only=("id", "description")))
+    field_events = fields.List(fields.Nested(lambda: FieldSchema, only=("id", "location")))
 
-class PersonSchema(ma.ModelSchema):
-    # person_type = SmartNested(TypeSchema)
-    # gender = SmartNested(GenreSchema)
-    class Meta:
-        model = models.Person
-        fields = ("first_name", "last_name", "middle_name", "phone",
-            "birthday", "occupation", "institution", "type_id", "gender_id",
-            "frequency", "field_events")
-    
-    type_id = ma.Nested(TypeSchema)
-    gender_id = ma.Nested(GenderSchema)
+class LendingSchema(Schema):
+    id = fields.Int()
+    lender = fields.Str()
+    lend_date = fields.Str()
+    return_expected = fields.Str()
+    return_done = fields.Str()
+    observations = fields.Str()
+    equipment = fields.Nested(InventorySchema, only=("id", "name"))
 
+class IssueSchema(Schema):
+    id = fields.Int()
+    description = fields.Str()
+    report_date = fields.Str()
+    solution_date = fields.Str()
+    equipment = fields.Nested(InventorySchema, only=("id", "name"))
 
-class UserSchema(ma.ModelSchema):
-    # person = SmartNested(PersonSchema)
-    class Meta:
-        model = models.User
-        fields = ("username", "email")
+class NoticeSchema(Schema):
+    id = fields.Int()
+    title = fields.Str()
+    date = fields.Str()
+    content = fields.Str()
+    archived = fields.Bool()
+    user_id = fields.Int()
 
+class FieldSchema(Schema):
+    id = fields.Int()
+    location = fields.Str()
+    date_start = fields.Str()
+    date_end_expected = fields.Str()
+    date_end_done = fields.Str()
+    observations = fields.Str()
+    personnel = fields.List(fields.Int())
+    equipments = fields.List(fields.Int())
 
-class ProfileSchema(ma.ModelSchema):
-    class Meta:
-        model = models.User
-        fields = ("username", "email", "notices", "person_id")
-    
-    person_id = ma.Nested(PersonSchema)
-
-
-class FrequencySchema(ma.ModelSchema):
-    # person = SmartNested(PersonSchema)
-    class Meta:
-        model = models.FrequencyEvent
-
-
-class InventorySchema(ma.ModelSchema):
-    class Meta:
-        model = models.Inventory
-
-
-class LendingSchema(ma.ModelSchema):
-    # equipment = SmartNested(InventorySchema)
-    class Meta:
-        model = models.Lendings
-
-
-class IssueSchema(ma.ModelSchema):
-    # equipment = SmartNested(InventorySchema)
-    class Meta:
-        model = models.TechnicalIssues
-
-
-class NoticeSchema(ma.ModelSchema):
-    # user = SmartNested(UserSchema)
-    class Meta:
-        model = models.Notices
-
-
-class FieldSchema(ma.ModelSchema):
-    class Meta:
-        model = models.FieldEvent
-
-
-class FieldPerson(ma.TableSchema):
-    class Meta:
-        table = models.helper_field_person
-
-
-class FieldEquips(ma.TableSchema):
-    class Meta:
-        table = models.helper_field_equips
-
-# Marshmallow schema inits
+# Marchmallow schemas initialization
 type_schema = TypeSchema()
 types_schema = TypeSchema(many=True)
 gender_schema = GenderSchema()
@@ -103,6 +106,7 @@ person_schema = PersonSchema()
 people_schema = PersonSchema(many=True)
 user_schema = UserSchema()
 users_schema = UserSchema(many=True)
+profile_schema = ProfileSchema()
 frequency_schema = FrequencySchema()
 frequencies_schema = FrequencySchema(many=True)
 equipment_schema = InventorySchema()
@@ -115,7 +119,3 @@ notice_schema = NoticeSchema()
 notices_schema = NoticeSchema(many=True)
 field_schema = FieldSchema()
 fields_schema = FieldSchema(many=True)
-profile_schema = ProfileSchema()
-
-# fields_person_schema = FieldPerson(many=True, strict=True)
-# fields_equips_schema = FieldEquips(many=True, strict=True)

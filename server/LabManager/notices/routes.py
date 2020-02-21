@@ -1,4 +1,4 @@
-from datetime import datetime
+import time
 from flask import Blueprint, request, make_response, jsonify
 from LabManager import db
 from LabManager.dbModels import User, Notices
@@ -14,7 +14,7 @@ notices = Blueprint("notices", __name__)
 def notices_all(current_user):
     notices = Notices.query.all()
 
-    return jsonify(notices_schema.dump(notices).data)
+    return jsonify(notices_schema.dump(notices))
 
 
 @notices.route("/notices/add", methods=["POST"])
@@ -23,70 +23,52 @@ def notices_add(current_user):
     title = request.json["title"]
     content = request.json["content"]
     archived = request.json["archived"]
-    user_id = request.json["user_id"]
-    date = datetime.utcnow()
+    date = time.time()
 
-    new_notice = Notices(title=title, content=content, archived=archived, user_id=user_id, date=date)
+    new_notice = Notices(
+        title=title,
+        content=content,
+        archived=archived,
+        user_id=current_user.id,
+        date=date
+        )
 
     db.session.add(new_notice)
     db.session.commit()
 
-    return jsonify(notice_schema.dump(new_notice).data)
+    return jsonify(notice_schema.dump(new_notice))
 
 
-@notices.route("/notices/<int:id>", methods=["GET"])
+@notices.route("/notices/<int:id>", methods=["GET", "PUT", "DELETE"])
 @token_required
-def notices_fetch(current_user, id):
-    notice = Notices.query.get(id)
+def notices_ops(current_user, id):
+    notice = Notices.query.filter_by(user_id=id).all()
     if notice is None:
-        return make_response("Notice entry does not exist.", 404)
-
-    return jsonify(notice_schema.dump(notice).data)
-
-  
-@notices.route("/notices/user/<int:id>", methods=["GET"])
-@token_required
-def notices_user(current_user, id):
-    notices = Notices.query.filter_by(user_id=id).all()
-    if notices is None:
         return make_response("No notices found for this user.", 404)
 
-    return jsonify(notices_schema.dump(notices).data)
+    if request.method == "GET":
+        return jsonify(notices_schema.dump(notice))
+    
+    if request.method == "PUT":
+        title = request.json["title"]
+        content = request.json["content"]
+        archived = request.json["archived"]
+        user_id = request.json["user_id"]
+        date = time.time()
 
+        notice.title = title
+        notice.content = content
+        notice.archived = archived
+        notice.user_id = user_id
+        notice.date = date
 
-@notices.route("/notices/update/<int:id>", methods=["PUT"])
-@token_required
-def notices_update(current_user, id):
-    notice = Notices.query.get(id)
-    if notice is None:
-        return make_response("Notice entry does not exist.", 404)
+        db.session.commit()
 
-    title = request.json["title"]
-    content = request.json["content"]
-    archived = request.json["archived"]
-    user_id = request.json["user_id"]
-    date = datetime.utcnow()
+        return jsonify(notice_schema.dump(notice))
+    
+    if request.method == "DELETE":
+        response = notice_schema.dump(notice)
+        db.session.delete(notice)
+        db.session.commit()
 
-    notice.title = title
-    notice.content = content
-    notice.archived = archived
-    notice.user_id = user_id
-    notice.date = date
-
-    db.session.commit()
-
-    return jsonify(notice_schema.dump(notice).data)
-
-
-@notices.route("/notices/delete/<int:id>", methods=["DELETE"])
-@token_required
-def notices_delete(current_user, id):
-    notice = Notices.query.get(id)
-    if notice is None:
-        return make_response("Notice entry does not exist.", 404)
-
-    response = notice_schema.dump(notice).data
-    db.session.delete(notice)
-    db.session.commit()
-
-    return jsonify(response)
+        return jsonify(response)

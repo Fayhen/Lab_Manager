@@ -1,4 +1,3 @@
-from datetime import datetime, date, time
 from flask import Blueprint, request, make_response, jsonify
 from LabManager import db
 from LabManager.dbModels import PersonType, Gender, Person, FrequencyEvent
@@ -16,7 +15,7 @@ personnel = Blueprint("personnel", __name__)
 def gender_all():
     genders = Gender.query.all()
 
-    return jsonify(genders_schema.dump(genders).data)
+    return jsonify(genders_schema.dump(genders))
 
 @personnel.route("/genders/add", methods=["POST"])
 def gender_add():
@@ -25,13 +24,13 @@ def gender_add():
     db.session.add(new_gender)
     db.session.commit()
 
-    return jsonify(gender_schema.dump(new_gender).data)
+    return jsonify(gender_schema.dump(new_gender))
 
-@personnel.route("/genders/<int:id>", methods=["POST"])
+@personnel.route("/genders/<int:id>", methods=["GET"])
 def gender_fetch(id):
     gender = Gender.query.get(id)
 
-    return jsonify(gender_schema.dump(gender).data)
+    return jsonify(gender_schema.dump(gender))
 
 @personnel.route("/genders/update/<int:id>", methods=["PUT"])
 def gender_update(id):
@@ -40,12 +39,12 @@ def gender_update(id):
     gender.gender_name = gender_name
     db.session.commit()
 
-    return jsonify(gender_schema.dump(gender).data)
+    return jsonify(gender_schema.dump(gender))
 
 @personnel.route("/genders/delete/<int:id>", methods=["DELETE"])
 def gender_delete(id):
     gender = Gender.query.get(id)
-    response = gender_schema.dump(gender).data
+    response = gender_schema.dump(gender)
     db.session.delete(gender)
     db.session.commit()
 
@@ -55,7 +54,7 @@ def gender_delete(id):
 def type_all():
     types = PersonType.query.all()
 
-    return jsonify(types_schema.dump(types).data)
+    return jsonify(types_schema.dump(types))
 
 @personnel.route("/persontypes/add", methods=["POST"])
 def type_add():
@@ -64,13 +63,13 @@ def type_add():
     db.session.add(new_type)
     db.session.commit()
 
-    return jsonify(type_schema.dump(new_type).data)
+    return jsonify(type_schema.dump(new_type))
 
 @personnel.route("/persontypes/<int:id>", methods=["POST"])
 def type_fetch(id):
     persontype = PersonType.query.get(id)
 
-    return jsonify(type_schema.dump(persontype).data)
+    return jsonify(type_schema.dump(persontype))
 
 @personnel.route("/persontypes/update/<int:id>", methods=["PUT"])
 def type_update(id):
@@ -79,12 +78,12 @@ def type_update(id):
     persontype.type_name = type_name
     db.session.commit()
 
-    return jsonify(type_schema.dump(persontype).data)
+    return jsonify(type_schema.dump(persontype))
 
 @personnel.route("/persontypes/delete/<int:id>", methods=["DELETE"])
 def type_delete(id):
     persontype = PersonType.query.get(id)
-    response = type_schema.dump(persontype).data
+    response = type_schema.dump(persontype)
     db.session.delete(persontype)
     db.session.commit()
 
@@ -97,7 +96,7 @@ def type_delete(id):
 def personnel_all(current_user):
     personnel = Person.query.all()
 
-    return jsonify(people_schema.dump(personnel).data)
+    return jsonify(people_schema.dump(personnel))
 
 
 @personnel.route("/personnel/add", methods=["POST"])
@@ -107,16 +106,12 @@ def personnel_add(current_user):
     last_name = request.json["last_name"]
     middle_name = request.json["middle_name"]
     phone = request.json["phone"]
+    birthday = request.json["birthday"]
     occupation = request.json["occupation"]
     institution = request.json["institution"]
     type_id = request.json["type_id"]
     gender_id = request.json["gender_id"]
-    # Parse dates
-    if request.json["birthday"]:
-        birthday = datetime.strptime(request.json["birthday"], "%Y-%m-%d")
-    else:
-        birthday = None
-
+    # Create instance
     new_person = Person(
         first_name = first_name,
         last_name = last_name,
@@ -127,73 +122,47 @@ def personnel_add(current_user):
         institution = institution,
         type_id = type_id,
         gender_id = gender_id
-    )
-
+        )
+    # Commit instance
     db.session.add(new_person)
     db.session.commit()
 
-    return jsonify(person_schema.dump(new_person).data)
+    return jsonify(person_schema.dump(new_person))
 
 
-@personnel.route("/personnel/<int:id>", methods=["GET"])
+@personnel.route("/personnel/<int:id>", methods=["GET", "PUT", "DELETE"])
 @token_required
-def personnel_fetch(current_user, id):
+def personnel_ops(current_user, id):
     person = Person.query.get(id)
     if person is None:
         return make_response("Person entry does not exist.", 404)
+        
+
+    if request.method == "GET":
+        return jsonify(person_schema.dump(person))
     
-    return jsonify(person_schema.dump(person).data)
+    if request.method == "PUT":
+        # Modify instance
+        person.first_name = request.json["first_name"]
+        person.last_name = request.json["last_name"]
+        person.middle_name = request.json["middle_name"]
+        person.phone = request.json["phone"]
+        person.birthday = request.json["birthday"]
+        person.occupation = request.json["occupation"]
+        person.institution = request.json["institution"]
+        person.type_id = request.json["type_id"]
+        person.gender_id = request.json["gender_id"]
+        # Commit instance
+        db.session.commit()
 
-
-@personnel.route("/personnel/update/<int:id>", methods=["PUT"])
-@token_required
-def personnel_update(current_user, id):
-    person = Person.query.get(id)
-    if person is None:
-        return make_response("Person entry does not exist.", 404)
-
-    first_name = request.json["first_name"]
-    last_name = request.json["last_name"]
-    middle_name = request.json["middle_name"]
-    phone = request.json["phone"]
-    occupation = request.json["occupation"]
-    institution = request.json["institution"]
-    type_id = request.json["type_id"]
-    gender_id = request.json["gender_id"]
+        return jsonify(person_schema.dump(person))
     
-    # Parse dates
-    if request.json["birthday"]:
-        birthday = datetime.strptime(request.json["birthday"], "%Y-%m-%d")
-    else:
-        birthday = None
+    if request.method == "DELETE":
+        response = person_schema.dump(person)
+        db.session.delete(person)
+        db.session.commit()
 
-    person.first_name = first_name
-    person.last_name = last_name
-    person.middle_name = middle_name
-    person.phone = phone
-    person.birthday = birthday
-    person.occupation = occupation
-    person.institution = institution
-    person.type_id = type_id
-    person.gender_id = gender_id
-
-    db.session.commit()
-
-    return jsonify(person_schema.dump(person).data)
-
-
-@personnel.route("/personnel/delete/<int:id>", methods=["DELETE"])
-@token_required
-def personnel_delete(current_user, id):
-    person = Person.query.get(id)
-    if person is None:
-        return make_response("Person entry does not exist.", 404)
-    
-    response = person_schema.dump(person).data
-    db.session.delete(person)
-    db.session.commit()
-
-    return jsonify(response)
+        return jsonify(response)
 
 
 # Frequency events ops
@@ -202,66 +171,58 @@ def personnel_delete(current_user, id):
 def frequency_all(current_user):
     frequencies = FrequencyEvent.query.all()
 
-    return jsonify(frequencies_schema.dump(frequencies).data)
+    return jsonify(frequencies_schema.dump(frequencies))
 
 
 @personnel.route("/frequency/add", methods=["POST"])
 @token_required
 def frequency_add(current_user):
-    date = datetime.strptime(request.json["date"], "%Y-%m-%d")
-    entry_time = time.fromisoformat(request.json["entry_time"])
-    exit_time = time.fromisoformat(request.json["exit_time"])
+    date = request.json["date"]
+    entry_time = request.json["entry_time"]
+    exit_time = request.json["exit_time"]
     person_id = request.json["person_id"]
 
-    new_frequency = FrequencyEvent(date=date, entry_time=entry_time, exit_time=exit_time, person_id=person_id)
+    frequency = FrequencyEvent(
+        date=date,
+        entry_time=entry_time, 
+        xit_time=exit_time,
+        person_id=person_id
+        )
 
-    db.session.add(new_frequency)
+    db.session.add(frequency)
     db.session.commit()
 
-    return jsonify(frequency_schema.dump(new_frequency).data)
+    return jsonify(frequency_schema.dump(frequency))
 
 
-@personnel.route("/frequency/<int:id>", methods=["GET"])
+@personnel.route("/frequency/<int:id>", methods=["GET", "PUT", "DELETE"])
 @token_required
-def frequency_fetch(current_user, id):
+def frequency_ops(current_user, id):
     frequency = FrequencyEvent.query.get(id)
     if frequency is None:
         return make_response("This frequency entry does not exist.", 404)
 
-    return jsonify(frequency_schema.dump(frequency).data)
-
-
-@personnel.route("/frequency/update/<int:id>", methods=["PUT"])
-@token_required
-def frequency_update(current_user, id):
-    frequency = FrequencyEvent.query.get(id)
-    if frequency is None:
-        return make_response("This frequency entry does not exist.", 404)
+    if request.method == "GET":
+        return jsonify(frequency_schema.dump(frequency))
     
-    date = datetime.strptime(request.json["date"], "%Y-%m-%d")
-    entry_time = time.fromisoformat(request.json["entry_time"])
-    exit_time = time.fromisoformat(request.json["exit_time"])
-    person_id = request.json["person_id"]
+    if request.method == "PUT":
+        date = request.json["date"]
+        entry_time = request.json["entry_time"]
+        exit_time = request.json["exit_time"]
+        person_id = request.json["person_id"]
 
-    frequency.date = date
-    frequency.entry_time = entry_time
-    frequency.exit_time = exit_time
-    frequency.person_id = person_id
+        frequency.date = date
+        frequency.entry_time = entry_time
+        frequency.exit_time = exit_time
+        frequency.person_id = person_id
 
-    db.session.commit()
+        db.session.commit()
 
-    return jsonify(frequency_schema.dump(frequency).data)
+        return jsonify(frequency_schema.dump(frequency))
+    
+    if request.method == "DELETE":
+        response = frequency_schema.dump(frequency)
+        db.session.delete(frequency)
+        db.session.commit()
 
-
-@personnel.route("/frequency/delete/<int:id>", methods=["DELETE"])
-@token_required
-def frequency_delete(current_user, id):
-    frequency = FrequencyEvent.query.get(id)
-    if frequency is None:
-        return make_response("This frequency entry does not exist.", 404)
-
-    response = frequency_schema.dump(frequency).data
-    db.session.delete(frequency)
-    db.session.commit()
-
-    return jsonify(response)
+        return jsonify(response)

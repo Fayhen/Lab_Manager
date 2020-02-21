@@ -18,14 +18,13 @@ def token_required(f):
             'message': 'Expired token. Reauthentication required.',
             'authenticated': False
         }
-        internals_msg = {
-            'message': 'Server-side error. Please seek shelter and contact support.',
+        notfound_msg = {
+            'message': 'The logged user can no longer be found on the database. Please log in with a valid account.',
             'authenticated': False
         }
 
         auth_headers = request.headers.get("Authorization", "").split()
         if len(auth_headers) != 2:
-            invalid_msg["in"] = "line 50"
             return jsonify(invalid_msg), 401
 
         try:
@@ -34,23 +33,22 @@ def token_required(f):
             id = int(data["id"])
             current_user = User.query.filter_by(id=id).first()
             if not current_user:
-                raise RuntimeError('User not found')
+                return jsonify(notfound_msg), 401
 
             return f(current_user, *args, **kwargs)
 
-        except RuntimeError:
-            return jsonify(internals_msg), 500
-
-        except TypeError:
-            return jsonify(internals_msg), 500
         
         except jwt.ExpiredSignatureError:
             return jsonify(expired_msg), 401
 
-        except (jwt.InvalidTokenError, Exception) as e:
-            print(e)
-            invalid_msg["in"] = "line 74"
-            invalid_msg["exception"] = str(e)
+        except jwt.InvalidTokenError:
             return jsonify(invalid_msg), 401
+        
+        except Exception as e:
+            error_message = {
+                'exeption': str(e),
+                'authenticated': True
+            }
+            return jsonify(error_message), 500
 
     return decorated

@@ -5,7 +5,8 @@ _testFiles/
 LabManager/static/profile_pics/
 LabManager/_data/
 LabManager/_data/json_database.json
-LabManager/app.db 
+LabManager/app.db
+LabManager/app.db-journal
 dbDraft.xlsx
 bfg.jar
 bfg.java
