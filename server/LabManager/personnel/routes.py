@@ -91,6 +91,17 @@ def type_delete(id):
 
 
 # Personnel ops
+@personnel.route("/personnel", methods=["GET"])
+def personnel_get():
+    if not request.args.get('visitors'):
+        return make_response("Missing required query parameter 'visitors'", 400)
+
+    visitors = request.args.get('visitors') == 'true'
+    personnel = Person.query.filter(Person.is_visitor == visitors)
+    
+    return jsonify(people_schema.dump(personnel))
+
+
 @personnel.route("/personnel/all", methods=["GET"])
 @token_required
 def personnel_all(current_user):

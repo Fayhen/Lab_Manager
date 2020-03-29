@@ -12,8 +12,34 @@
 
         <q-tabs align="left" v-model="tab" shrink>
           <q-route-tab to="/" label="Home" />
-          <q-route-tab to="/personnel" label="Personnel" />
-          <q-route-tab to="/inventory" label="Inventory" />
+          <!-- <q-route-tab to="/personnel" label="Personnel" /> -->
+          <q-btn-dropdown auto-close stretch flat label="Personnel">
+            <q-list>
+              <q-item clickable @click="openPersonnel()">
+                <q-item-section>Registry</q-item-section>
+              </q-item>
+
+              <q-item clickable @click="openFrequency()">
+                <q-item-section>Frequency</q-item-section>
+              </q-item>
+            </q-list>
+          </q-btn-dropdown>
+          <!-- <q-route-tab to="/inventory" label="Inventory" /> -->
+          <q-btn-dropdown auto-close stretch flat label="Inventory">
+            <q-list>
+              <q-item clickable @click="openEquipments()">
+                <q-item-section>Equipments</q-item-section>
+              </q-item>
+
+              <q-item clickable @click="openLendings()">
+                <q-item-section>Lendings</q-item-section>
+              </q-item>
+
+              <q-item clickable @click="openTechnical()">
+                <q-item-section>Issues</q-item-section>
+              </q-item>
+            </q-list>
+          </q-btn-dropdown>
           <q-route-tab to="/fieldtrips" label="Fieldtrips" />
           <q-route-tab to="/calendar" label="Calendar" />
         </q-tabs>
@@ -55,6 +81,23 @@ export default {
     return {
       right: true,
     };
+  },
+  methods: {
+    openPersonnel() {
+      this.$router.push('/personnel');
+    },
+    openFrequency() {
+      this.$router.push('/frequency');
+    },
+    openEquipments() {
+      this.$router.push('/equipments');
+    },
+    openLendings() {
+      this.$router.push('/lendings');
+    },
+    openTechnical() {
+      this.$router.push('/technical');
+    },
   },
 };
 </script>
