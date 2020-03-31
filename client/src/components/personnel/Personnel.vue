@@ -10,9 +10,15 @@
           :class="{ hidden: showVisitors }"
           v-on:click=" showVisitors = !showVisitors " />
       </div>
-      <person-card id="personnel" :personnel="personnel"
+      <person-card id="personnel"
+        :personnel="personnel"
+        :types="types"
+        :genders="genders"
         :class="{ hidden: !showVisitors }" />
-      <person-card id="visitors" :personnel="visitors"
+      <person-card id="visitors"
+        :personnel="visitors"
+        :types="types"
+        :genders="genders"
         :class="{ hidden: showVisitors }" />
     </div>
   </q-page>
@@ -24,6 +30,7 @@
 <script>
 import axios from 'axios';
 import PersonCard from './components/PersonCard';
+import { ParseDate } from '../../utils/StringUtils';
 
 export default {
   name: 'Personnel',
@@ -32,6 +39,8 @@ export default {
       showVisitors: true,
       personnel: [],
       visitors: [],
+      types: {},
+      genders: {},
     };
   },
 
@@ -44,9 +53,13 @@ export default {
       .then((res) => {
         const personnel = res.data;
 
-        this.personnel = personnel.map(person => (
-          { ...person, expanded: false }
-        ));
+        this.personnel = personnel.map((person) => {
+          const parsedBirthday = ParseDate(person.birthday);
+          person.birthday = parsedBirthday;
+          const parsedVisitors = { ...person, expanded: false, editMode: false };
+
+          return parsedVisitors;
+        });
       })
       .catch((err) => {
         console.log(err);
@@ -60,13 +73,37 @@ export default {
       .then((res) => {
         const visitors = res.data;
 
-        this.visitors = visitors.map(person => (
-          { ...person, expanded: false }
-        ));
+        this.visitors = visitors.map((person) => {
+          const parsedBirthday = ParseDate(person.birthday);
+          person.birthday = parsedBirthday;
+          const parsedVisitors = { ...person, expanded: false, editMode: false };
+
+          return parsedVisitors;
+        });
       })
       .catch((err) => {
         console.log(err);
       });
+
+    axios.get('/persontypes')
+      .then((res) => {
+        this.types = res.data;
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+
+    axios.get('/genders')
+      .then((res) => {
+        this.genders = res.data;
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  },
+
+  methods: {
+    ParseDate,
   },
 
   components: {

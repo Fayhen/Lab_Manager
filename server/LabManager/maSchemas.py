@@ -23,10 +23,10 @@ class PersonSchema(Schema):
     occupation = fields.Str()
     institution = fields.Str()
     is_visitor = fields.Bool()
-    # type_id = fields.Int()
-    # gender_id = fields.Int()
     person_type = fields.Nested(TypeSchema, only=("id", "type_name",))
+    # person_type = fields.Pluck(TypeSchema, "type_name",)
     person_gender = fields.Nested(GenderSchema, only=("id", "gender_name",))
+    # person_gender = fields.Pluck(GenderSchema, "gender_name")
     account = fields.List(fields.Nested(lambda: UserSchema))
 
 class UserSchema(Schema):

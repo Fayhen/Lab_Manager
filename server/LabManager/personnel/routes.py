@@ -11,6 +11,15 @@ personnel = Blueprint("personnel", __name__)
 
 
 # Backend ops, might be erased upon deployement in favor of pre-populating SQL scripts
+@personnel.route("/genders", methods=["GET"])
+def gender_list():
+    genders = {}
+
+    for gender in Gender.query.all():
+        genders[gender.gender_name] = gender.id
+
+    return jsonify(genders)
+
 @personnel.route("/genders/all", methods=["GET"])
 def gender_all():
     genders = Gender.query.all()
@@ -49,6 +58,15 @@ def gender_delete(id):
     db.session.commit()
 
     return jsonify(response)
+
+@personnel.route("/persontypes", methods=["GET"])
+def type_list():
+    types = {}
+
+    for person_type in PersonType.query.all():
+        types[person_type.type_name] = person_type.id
+
+    return jsonify(types)
 
 @personnel.route("/persontypes/all", methods=["GET"])
 def type_all():
@@ -103,8 +121,9 @@ def personnel_get():
 
 
 @personnel.route("/personnel/all", methods=["GET"])
-@token_required
-def personnel_all(current_user):
+# @token_required
+# def personnel_all(current_user):
+def personnel_all():
     personnel = Person.query.all()
 
     return jsonify(people_schema.dump(personnel))
@@ -142,8 +161,9 @@ def personnel_add(current_user):
 
 
 @personnel.route("/personnel/<int:id>", methods=["GET", "PUT", "DELETE"])
-@token_required
-def personnel_ops(current_user, id):
+# @token_required
+# def personnel_ops(current_user, id):
+def personnel_ops( id):
     person = Person.query.get(id)
     if person is None:
         return make_response("Person entry does not exist.", 404)

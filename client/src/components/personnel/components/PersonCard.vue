@@ -1,8 +1,11 @@
 <template>
   <div v-if="personnel.length > 0">
 
-    <q-card flat class="person-card q-mb-xs"
-      v-for="person in personnel" :key="person.id">
+    <q-card
+      flat
+      class="person-card text-grey-10 q-mb-xs"
+      v-for="person in personnel" :key="person.id"
+    >
       <div class="row items-center no-wrap bg-green-3">
 
         <q-avatar size="80px" class="q-ma-xs">
@@ -17,7 +20,9 @@
               person.middle_name,
               person.last_name
             ) }}</div>
-            <div>{{ CapitalizeFirstLetter(person.person_type.type_name) }}</div>
+            <div>
+              {{ CapitalizeFirstLetter(person.person_type.type_name) }}
+            </div>
           </div>
 
           <div class="text-caption text-justify q-mt-xs">
@@ -26,7 +31,9 @@
 
         </div>
 
-        <q-card-actions class="side-button self-stretch no-padding q-ml-xs">
+        <q-card-actions
+          class="side-button self-stretch no-padding q-ml-xs"
+        >
           <q-btn
             class="self-stretch bg-green-6 text-white"
             unelevated
@@ -52,7 +59,9 @@
                 <div class="column full-width justify-between">
                   <div>Birthday: {{ person.birthday }}</div>
                   <div class="q-mt-sm">
-                    Gender: {{ CapitalizeFirstLetter(person.person_gender.gender_name) }}
+                    Gender: {{ CapitalizeFirstLetter(
+                      person.person_gender.gender_name
+                    ) }}
                   </div>
                 </div>
 
@@ -66,25 +75,39 @@
 
             <div class="column no-wrap no-padding q-ml-xs">
               <q-btn
-              class="side-button full-height"
-              color="green-6"
-              flat
-              unelevated
-              icon="edit" >
+                class="side-button full-height"
+                color="green-6"
+                flat
+                unelevated
+                :icon="person.editMode ? 'cancel' : 'edit'"
+                @click="person.editMode = !person.editMode"
+              >
                 <q-tooltip>Edit</q-tooltip>
               </q-btn>
 
               <q-btn
-              class="side-button full-height"
-              flat
-              unelevated
-              color="green-6"
-              icon="more_vert" >
+                class="side-button full-height"
+                flat
+                unelevated
+                color="green-6"
+                icon="open_in_browser"
+                @click="logDate(person.birthday)"
+              >
                 <q-tooltip>Full view</q-tooltip>
               </q-btn>
 
             </div>
           </div>
+
+          <q-slide-transition v-show="person.editMode">
+            <PersonEdit
+              class="q-mb-md q-mt-sm"
+              :person="person"
+              :types="types"
+              :genders="genders"
+            />
+          </q-slide-transition>
+
         </div>
       </q-slide-transition>
     </q-card>
@@ -93,28 +116,55 @@
 
   <div v-else class="person-card row items-center no-wrap bg-green-3"
     style="height: 90px;" >
-    <div class="full-width"></div>
-    <div class="side-button self-stretch bg-green-6"></div>
+    <div class="full-width flex justify-center">
+      <q-spinner-oval
+        color="green-8"
+        size="3em"
+      />
+    </div>
+    <q-btn
+      class="side-button self-stretch bg-green-6 text-white"
+      unelevated
+      disabled
+      icon="keyboard_arrow_down"
+     >
+    </q-btn>
   </div>
 </template>
 
 <script>
-// const ParseName = require('../../../utils/ParseName');
-import { ParseName, CapitalizeFirstLetter } from '../../../utils/StringUtils';
+import PersonEdit from './PersonEdit';
+import {
+  ParseName,
+  CapitalizeFirstLetter,
+  DateToUnix,
+} from '../../../utils/StringUtils';
 
 export default {
   name: 'PersonCard',
+
   props: {
     personnel: Array,
+    types: Object,
+    genders: Object,
   },
-  data() {
-    return {
-      expanded: false,
-    };
-  },
+
   methods: {
     ParseName,
+    DateToUnix,
     CapitalizeFirstLetter,
+    logDate(date) {
+      // console.log('person.birthday is:');
+      // console.log(date);
+      // console.log('Calling DateToUnix...');
+      // const unparsed = DateToUnix(date);
+      DateToUnix(date);
+      // console.log('dates above');
+    },
+  },
+
+  components: {
+    PersonEdit,
   },
 };
 </script>
