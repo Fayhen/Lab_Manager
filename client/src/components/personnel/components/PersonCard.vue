@@ -9,7 +9,7 @@
       <div class="row items-center no-wrap bg-green-3">
 
         <q-avatar size="80px" class="q-ma-xs">
-          <img src="https://cdn.quasar.dev/img/avatar.png">
+          <img :src="person.image">
         </q-avatar>
 
         <div class="column fit q-ml-sm">

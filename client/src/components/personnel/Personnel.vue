@@ -56,7 +56,12 @@ export default {
         this.personnel = personnel.map((person) => {
           const parsedBirthday = ParseDate(person.birthday);
           person.birthday = parsedBirthday;
-          const parsedVisitors = { ...person, expanded: false, editMode: false };
+          const parsedVisitors = {
+            ...person,
+            expanded: false,
+            editMode: false,
+            image: 'http://localhost:5000/get_images/personnel/example.png',
+          };
 
           return parsedVisitors;
         });
